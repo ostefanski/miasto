@@ -55,7 +55,7 @@ const Map: React.FC<MapProps> = ({ chosenCity }) => {
 		// map options
 		const mapOptions = {
 			center: position,
-			zoom: 14,
+			zoom: 12,
 			mapId: 'MY_REACT_MAPID',
 		};
 
