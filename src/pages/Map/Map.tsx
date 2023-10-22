@@ -1,4 +1,4 @@
-import { LegacyRef, useEffect, useRef, useState } from 'react';
+import { LegacyRef, useEffect, useRef } from 'react';
 import './Map.css';
 import { GoogleApiLoader } from 'src/utils/GoogleApi';
 
@@ -9,7 +9,6 @@ type MapProps = {
 const Map: React.FC<MapProps> = ({ chosenCity }) => {
 	const mapRef = useRef<HTMLElement | null>(null);
 	const mapInstance = useRef<google.maps.Map | null>(null);
-	const [lastClickedLocation, setLastClickedLocation] = useState(null);
 
 	const getCityPosition = (city: string): google.maps.LatLngLiteral => {
 		switch (city) {
@@ -43,19 +42,8 @@ const Map: React.FC<MapProps> = ({ chosenCity }) => {
 
 		map.addListener('click', (event) => {
 			const clickedLocation = event.latLng;
-			if (lastClickedLocation && clickedLocation.equals(lastClickedLocation)) {
-				console.log('sa takie same');
-				googleMarker.setVisible(false);
-				setLastClickedLocation(clickedLocation);
-			} else {
-				console.log('nie sa');
-				googleMarker.setPosition(clickedLocation);
-				googleMarker.setVisible(true);
-				setLastClickedLocation(clickedLocation);
-				// console.log(lastClickedLocation);
-			}
-			// googleMarker.setPosition(clickedLocation);
-			// googleMarker.setVisible(true);
+			googleMarker.setPosition(clickedLocation);
+			googleMarker.setVisible(true);
 		});
 	};
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './DropDownButton.css';
-import icon from './button.svg';
+import icon from 'src/assets/button.svg';
 
 function Dropdown({ chosenCity, setChosenCity }) {
 	const [isActive, setIsActive] = useState(false);
