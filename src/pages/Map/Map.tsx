@@ -1,6 +1,7 @@
 import { LegacyRef, useEffect, useRef } from 'react';
 import './Map.css';
 import { GoogleApiLoader } from 'src/utils/GoogleApi';
+import { initMap } from 'src/utils/GoogleApi';
 
 type MapProps = {
 	chosenCity: string;
@@ -48,27 +49,18 @@ const Map: React.FC<MapProps> = ({ chosenCity }) => {
 	};
 
 	const initMapWithMarker = async () => {
-		const mapInitialization = await GoogleApiLoader.importLibrary('maps');
-
 		const position = getCityPosition(chosenCity);
-
-		// map options
-		const mapOptions = {
-			center: position,
-			zoom: 12,
-			mapId: 'MY_REACT_MAPID',
-		};
 
 		// Setup the map
 		if (mapRef.current !== null) {
-			mapInstance.current = new mapInitialization.Map(mapRef.current, mapOptions);
+			mapInstance.current = await initMap(mapRef.current, position);
 			initMarker(position, mapInstance.current);
 		}
 	};
 
 	useEffect(() => {
 		// Initialize the map and marker only when the component is mounted
-		if (mapInstance.current === null) {
+		if (mapInstance.current === null && mapInstance.current === null) {
 			initMapWithMarker();
 		} else {
 			// If the map is already initialized, just pan to the new position
