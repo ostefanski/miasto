@@ -1,14 +1,16 @@
 import { LegacyRef, useEffect, useRef } from 'react';
 import './Map.css';
-import { initMap, initMarker } from 'src/utils/GoogleApi';
+import { initMap } from 'src/utils/GoogleApi';
 
 type MapProps = {
 	chosenCity: string;
+	selectedLocation: google.maps.LatLng | undefined;
 };
 
-const Map: React.FC<MapProps> = ({ chosenCity }) => {
+const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation }) => {
 	const mapRef = useRef<HTMLElement | null>(null);
 	const mapInstance = useRef<google.maps.Map | null>(null);
+	const markerInstance = useRef<google.maps.Marker | null>(null);
 
 	const getCityPosition = (city: string): google.maps.LatLngLiteral => {
 		switch (city) {
@@ -29,7 +31,23 @@ const Map: React.FC<MapProps> = ({ chosenCity }) => {
 		// Setup the map
 		if (mapRef.current !== null) {
 			mapInstance.current = await initMap(mapRef.current, position);
-			initMarker(position, mapInstance.current);
+			// markerInstance.current = await initMarker(position, mapInstance.current);
+			// initMarker(position, mapInstance.current);
+			markerInstance.current = new google.maps.Marker({
+				position: position,
+				map: mapInstance.current,
+				visible: false,
+			});
+
+			markerInstance.current.addListener('click', () => {
+				markerInstance.current?.setVisible(false);
+			});
+
+			mapInstance.current.addListener('click', (event) => {
+				const clickedLocation = event.latLng;
+				markerInstance.current?.setPosition(clickedLocation);
+				markerInstance.current?.setVisible(true);
+			});
 		}
 	};
 
@@ -38,10 +56,26 @@ const Map: React.FC<MapProps> = ({ chosenCity }) => {
 		if (mapInstance.current === null) {
 			initMapWithMarker();
 		} else {
-			// If the map is already initialized, just pan to the new position
-			mapInstance.current.panTo(getCityPosition(chosenCity));
+			if (selectedLocation) {
+				mapInstance.current?.panTo(selectedLocation);
+				if (markerInstance.current) {
+					markerInstance.current.setPosition(selectedLocation);
+					markerInstance.current?.setVisible(true);
+				}
+			}
 		}
-	});
+	}, [selectedLocation]);
+
+	useEffect(() => {
+		if (mapInstance.current) {
+			const newCityPosition = getCityPosition(chosenCity);
+			mapInstance.current.panTo(newCityPosition);
+			if (markerInstance.current) {
+				markerInstance.current.setPosition(newCityPosition);
+				markerInstance.current.setVisible(false);
+			}
+		}
+	}, [chosenCity]);
 
 	return <div ref={mapRef as LegacyRef<HTMLDivElement>} className='map' />;
 };

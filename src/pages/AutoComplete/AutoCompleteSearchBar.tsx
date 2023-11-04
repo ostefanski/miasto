@@ -4,10 +4,9 @@ import SearchIcon from 'src/assets/search.svg';
 import ClearIcon from 'src/assets/clear.svg';
 import { initAutocompleteService } from 'src/utils/GoogleApi';
 
-function AutoCompleteSearchBar({ placeholder }) {
+function AutoCompleteSearchBar({ placeholder, setSelectedLocation }) {
 	const [searchText, setSearchText] = useState('');
 	const inputElement = useRef<HTMLInputElement | null>(null); // Add type for inputElement
-	const markerInstance = useRef<google.maps.Marker | null>(null); // Ref for the marker
 
 	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const inputValue = event.target.value;
@@ -21,19 +20,11 @@ function AutoCompleteSearchBar({ placeholder }) {
 	const onPlaceChanged = (autocomplete: google.maps.places.Autocomplete) => {
 		const place = autocomplete.getPlace();
 
-		// if (place.geometry && mapInstance.current) {
-		//   const location = place.geometry.location;
-		//   mapInstance.current.setCenter(location);
-
-		//   if (!markerInstance.current) {
-		//     markerInstance.current = new google.maps.Marker({
-		//       position: location,
-		//       map: mapInstance.current,
-		//     });
-		//   } else {
-		//     markerInstance.current.setPosition(location);
-		//   }
-		// }
+		if (place.geometry) {
+			const location = place.geometry.location;
+			setSelectedLocation(location);
+			setSearchText('');
+		}
 	};
 
 	const handleAutocomplete = async () => {
@@ -45,7 +36,7 @@ function AutoCompleteSearchBar({ placeholder }) {
 
 	useEffect(() => {
 		handleAutocomplete();
-	});
+	}, []);
 
 	return (
 		<div className='search-bar'>

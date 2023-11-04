@@ -24,29 +24,31 @@ export const initMap = async (map: HTMLElement, position: google.maps.LatLngLite
 	return new mapInitialization.Map(map, mapOptions);
 };
 
-export const initMarker = async (position: google.maps.LatLngLiteral, map: google.maps.Map) => {
-	const marker = await GoogleApiLoader.importLibrary('marker');
+// export const initMarker = async (position: google.maps.LatLngLiteral, map: google.maps.Map) => {
+// 	const marker = await GoogleApiLoader.importLibrary('marker');
 
-	// Marker options
-	const markerOptions = {
-		position: position,
-		map: map,
-		visible: false,
-	};
+// 	// Marker options
+// 	const markerOptions = {
+// 		position: position,
+// 		map: map,
+// 		visible: false,
+// 	};
 
-	// Setup the marker
-	const googleMarker = new marker.Marker(markerOptions);
+// 	// Setup the marker
+// 	const googleMarker = new marker.Marker(markerOptions);
 
-	googleMarker.addListener('click', () => {
-		googleMarker.setVisible(false);
-	});
+// 	googleMarker.addListener('click', () => {
+// 		googleMarker.setVisible(false);
+// 	});
 
-	map.addListener('click', (event) => {
-		const clickedLocation = event.latLng;
-		googleMarker.setPosition(clickedLocation);
-		googleMarker.setVisible(true);
-	});
-};
+// 	map.addListener('click', (event) => {
+// 		const clickedLocation = event.latLng;
+// 		googleMarker.setPosition(clickedLocation);
+// 		googleMarker.setVisible(true);
+// 	});
+
+// 	return googleMarker;
+// };
 
 // Function to initialize the Autocomplete service
 export const initAutocompleteService = async (inputElement: HTMLInputElement) => {
