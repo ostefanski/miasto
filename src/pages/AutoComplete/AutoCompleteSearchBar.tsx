@@ -23,7 +23,7 @@ function AutoCompleteSearchBar({ placeholder, setSelectedLocation }) {
 		if (place.geometry) {
 			const location = place.geometry.location;
 			setSelectedLocation(location);
-			setSearchText('');
+			setSearchText(inputElement.current?.value || '');
 		}
 	};
 
