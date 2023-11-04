@@ -1,7 +1,6 @@
 import { LegacyRef, useEffect, useRef } from 'react';
 import './Map.css';
-import { GoogleApiLoader } from 'src/utils/GoogleApi';
-import { initMap } from 'src/utils/GoogleApi';
+import { initMap, initMarker } from 'src/utils/GoogleApi';
 
 type MapProps = {
 	chosenCity: string;
@@ -24,30 +23,6 @@ const Map: React.FC<MapProps> = ({ chosenCity }) => {
 		}
 	};
 
-	const initMarker = async (position: google.maps.LatLngLiteral, map: google.maps.Map) => {
-		const marker = await GoogleApiLoader.importLibrary('marker');
-
-		// Marker options
-		const markerOptions = {
-			position: position,
-			map: map,
-			visible: false,
-		};
-
-		// Setup the marker
-		const googleMarker = new marker.Marker(markerOptions);
-
-		googleMarker.addListener('click', () => {
-			googleMarker.setVisible(false);
-		});
-
-		map.addListener('click', (event) => {
-			const clickedLocation = event.latLng;
-			googleMarker.setPosition(clickedLocation);
-			googleMarker.setVisible(true);
-		});
-	};
-
 	const initMapWithMarker = async () => {
 		const position = getCityPosition(chosenCity);
 
@@ -60,7 +35,7 @@ const Map: React.FC<MapProps> = ({ chosenCity }) => {
 
 	useEffect(() => {
 		// Initialize the map and marker only when the component is mounted
-		if (mapInstance.current === null && mapInstance.current === null) {
+		if (mapInstance.current === null) {
 			initMapWithMarker();
 		} else {
 			// If the map is already initialized, just pan to the new position
