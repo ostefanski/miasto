@@ -15,12 +15,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 	const redCircleinstance = useRef<google.maps.Circle | null>(null);
 	const greenCircleinstance = useRef<google.maps.Circle | null>(null);
 	const nearbyMarkersInstance = useRef<google.maps.Marker[] | null>(null);
-	const previousSelectedLocation = useRef<google.maps.LatLng | undefined>();
-	const previousChosenCity = useRef<string>();
-	const mapPreviousClickedLocation = useRef<google.maps.LatLng | undefined>();
 	const previousCount = useRef<number>();
-	const CityPositionInstance = useRef<google.maps.LatLngLiteral | undefined>();
-	const Clickedlocationinstance = useRef<google.maps.LatLng | undefined>();
 
 	const getCityPosition = (city: string): google.maps.LatLngLiteral => {
 		switch (city) {
@@ -148,8 +143,6 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 
 			mapInstance.current.addListener('click', (event) => {
 				const clickedLocation = event.latLng;
-				Clickedlocationinstance.current = clickedLocation;
-
 				markerInstance.current?.setPosition(clickedLocation);
 				markerInstance.current?.setVisible(true);
 			});
@@ -174,7 +167,6 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 	useEffect(() => {
 		if (mapInstance.current) {
 			const newCityPosition = getCityPosition(chosenCity);
-			CityPositionInstance.current = newCityPosition;
 			mapInstance.current.panTo(newCityPosition);
 			if (markerInstance.current) {
 				markerInstance.current.setPosition(newCityPosition);
@@ -184,10 +176,9 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 	}, [chosenCity]);
 
 	useEffect(() => {
-		console.log(count);
 		if (mapInstance.current) {
-			// Logika zwiazana z wyborem lokalizacji poprzez search bar
-			if (markerInstance.current && selectedLocation !== previousSelectedLocation.current) {
+			if (markerInstance.current) {
+				const markerPosition = markerInstance.current.getPosition();
 				if (count !== previousCount.current) {
 					console.log('cleared');
 					previousCount.current = count;
@@ -196,59 +187,9 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 					nearbyMarkersInstance.current?.forEach((marker) => {
 						marker.setVisible(false);
 					});
-
-					previousSelectedLocation.current = selectedLocation;
-					console.log('selected location if');
-					// findNearbyPlaces(selectedLocation);
-					createCircles(selectedLocation);
-				} else if (selectedLocation === previousSelectedLocation.current) {
-					console.log('xd');
-					return;
 				}
-			}
-
-			// Logika zwiazana z wyborem miasta poprzez dropdown
-			if (
-				markerInstance.current &&
-				chosenCity !== previousChosenCity.current &&
-				chosenCity !== 'Wybierz konkretne miasto'
-			) {
-				if (count !== previousCount.current) {
-					console.log('cleared');
-					previousCount.current = count;
-					greenCircleinstance.current?.setVisible(false);
-					redCircleinstance.current?.setVisible(false);
-					nearbyMarkersInstance.current?.forEach((marker) => {
-						marker.setVisible(false);
-					});
-					previousChosenCity.current = chosenCity;
-					console.log('chosen city if');
-					// findNearbyPlaces(CityPositionInstance.current);
-					createCircles(CityPositionInstance.current);
-				} else if (chosenCity === previousChosenCity.current) {
-					console.log('xd');
-					return;
-				}
-			}
-
-			// Logika zwiazana z zaznaczaniem markera na mapie po kliknieciu
-			if (mapInstance.current && Clickedlocationinstance.current !== mapPreviousClickedLocation.current) {
-				if (count !== previousCount.current) {
-					console.log('cleared');
-					previousCount.current = count;
-					greenCircleinstance.current?.setVisible(false);
-					redCircleinstance.current?.setVisible(false);
-					nearbyMarkersInstance.current?.forEach((marker) => {
-						marker.setVisible(false);
-					});
-					console.log('map click');
-					mapPreviousClickedLocation.current = Clickedlocationinstance.current;
-					// findNearbyPlaces(Clickedlocationinstance.current);
-					createCircles(Clickedlocationinstance.current);
-				} else if (Clickedlocationinstance.current === mapPreviousClickedLocation.current) {
-					console.log('xd');
-					return;
-				}
+				// findNearbyPlaces(markerPosition);
+				createCircles(markerPosition);
 			}
 		}
 	}, [count]);
