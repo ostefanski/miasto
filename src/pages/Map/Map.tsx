@@ -5,9 +5,10 @@ import { initMap } from 'src/utils/GoogleApi';
 type MapProps = {
 	chosenCity: string;
 	selectedLocation: google.maps.LatLng | undefined;
+	count: number;
 };
 
-const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation }) => {
+const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 	const mapRef = useRef<HTMLElement | null>(null);
 	const mapInstance = useRef<google.maps.Map | null>(null);
 	const markerInstance = useRef<google.maps.Marker | null>(null);
@@ -17,6 +18,9 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation }) => {
 	const previousSelectedLocation = useRef<google.maps.LatLng | undefined>();
 	const previousChosenCity = useRef<string>();
 	const mapPreviousClickedLocation = useRef<google.maps.LatLng | undefined>();
+	const previousCount = useRef<number>();
+	const CityPositionInstance = useRef<google.maps.LatLngLiteral | undefined>();
+	const Clickedlocationinstance = useRef<google.maps.LatLng | undefined>();
 
 	const getCityPosition = (city: string): google.maps.LatLngLiteral => {
 		switch (city) {
@@ -75,7 +79,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation }) => {
 	};
 
 	const findNearbyPlaces = async (defaultLocation) => {
-		const types = ['bank', 'hospital', 'university', 'bus_station', 'police', 'doctor', 'school', 'store'];
+		const types = ['university']; // 'hospital', , 'bus_station', 'police', 'doctor', 'school', 'bank', 'store'
 
 		if (mapInstance.current === null) {
 			console.error('Map is not initialized.');
@@ -134,7 +138,6 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation }) => {
 			});
 
 			markerInstance.current.addListener('click', () => {
-				// disable marker, circles, and other nearby markers when the deafult marker is clicked again
 				markerInstance.current?.setVisible(false);
 				greenCircleinstance.current?.setVisible(false);
 				redCircleinstance.current?.setVisible(false);
@@ -145,20 +148,10 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation }) => {
 
 			mapInstance.current.addListener('click', (event) => {
 				const clickedLocation = event.latLng;
-				// if clickedLocation is different than previous one, disable previous circles and markers
-				if (clickedLocation !== mapPreviousClickedLocation.current) {
-					mapPreviousClickedLocation.current = clickedLocation;
-					greenCircleinstance.current?.setVisible(false);
-					redCircleinstance.current?.setVisible(false);
-					nearbyMarkersInstance.current?.forEach((marker) => {
-						marker.setVisible(false);
-					});
-				}
+				Clickedlocationinstance.current = clickedLocation;
 
 				markerInstance.current?.setPosition(clickedLocation);
 				markerInstance.current?.setVisible(true);
-				findNearbyPlaces(clickedLocation);
-				createCircles(clickedLocation);
 			});
 		}
 	};
@@ -168,22 +161,11 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation }) => {
 		if (mapInstance.current === null) {
 			initMapWithMarker();
 		} else {
-			// If previous location is different than current one, disable previouse's location circles and markers
-			if (selectedLocation !== previousSelectedLocation.current) {
-				previousSelectedLocation.current = selectedLocation;
-				greenCircleinstance.current?.setVisible(false);
-				redCircleinstance.current?.setVisible(false);
-				nearbyMarkersInstance.current?.forEach((marker) => {
-					marker.setVisible(false);
-				});
-			}
 			if (selectedLocation) {
 				mapInstance.current?.panTo(selectedLocation);
 				if (markerInstance.current) {
 					markerInstance.current.setPosition(selectedLocation);
 					markerInstance.current?.setVisible(true);
-					findNearbyPlaces(selectedLocation);
-					createCircles(selectedLocation);
 				}
 			}
 		}
@@ -192,24 +174,84 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation }) => {
 	useEffect(() => {
 		if (mapInstance.current) {
 			const newCityPosition = getCityPosition(chosenCity);
+			CityPositionInstance.current = newCityPosition;
 			mapInstance.current.panTo(newCityPosition);
-			// If previous chosenCity is different than current one, disable previouse's chosenCity circles and markers
-			if (chosenCity !== previousChosenCity.current) {
-				previousChosenCity.current = chosenCity;
-				greenCircleinstance.current?.setVisible(false);
-				redCircleinstance.current?.setVisible(false);
-				nearbyMarkersInstance.current?.forEach((marker) => {
-					marker.setVisible(false);
-				});
-			}
 			if (markerInstance.current) {
 				markerInstance.current.setPosition(newCityPosition);
 				markerInstance.current.setVisible(true);
-				findNearbyPlaces(newCityPosition);
-				createCircles(newCityPosition);
 			}
 		}
 	}, [chosenCity]);
+
+	useEffect(() => {
+		console.log(count);
+		if (mapInstance.current) {
+			// Logika zwiazana z wyborem lokalizacji poprzez search bar
+			if (markerInstance.current && selectedLocation !== previousSelectedLocation.current) {
+				if (count !== previousCount.current) {
+					console.log('cleared');
+					previousCount.current = count;
+					greenCircleinstance.current?.setVisible(false);
+					redCircleinstance.current?.setVisible(false);
+					nearbyMarkersInstance.current?.forEach((marker) => {
+						marker.setVisible(false);
+					});
+
+					previousSelectedLocation.current = selectedLocation;
+					console.log('selected location if');
+					// findNearbyPlaces(selectedLocation);
+					createCircles(selectedLocation);
+				} else if (selectedLocation === previousSelectedLocation.current) {
+					console.log('xd');
+					return;
+				}
+			}
+
+			// Logika zwiazana z wyborem miasta poprzez dropdown
+			if (
+				markerInstance.current &&
+				chosenCity !== previousChosenCity.current &&
+				chosenCity !== 'Wybierz konkretne miasto'
+			) {
+				if (count !== previousCount.current) {
+					console.log('cleared');
+					previousCount.current = count;
+					greenCircleinstance.current?.setVisible(false);
+					redCircleinstance.current?.setVisible(false);
+					nearbyMarkersInstance.current?.forEach((marker) => {
+						marker.setVisible(false);
+					});
+					previousChosenCity.current = chosenCity;
+					console.log('chosen city if');
+					// findNearbyPlaces(CityPositionInstance.current);
+					createCircles(CityPositionInstance.current);
+				} else if (chosenCity === previousChosenCity.current) {
+					console.log('xd');
+					return;
+				}
+			}
+
+			// Logika zwiazana z zaznaczaniem markera na mapie po kliknieciu
+			if (mapInstance.current && Clickedlocationinstance.current !== mapPreviousClickedLocation.current) {
+				if (count !== previousCount.current) {
+					console.log('cleared');
+					previousCount.current = count;
+					greenCircleinstance.current?.setVisible(false);
+					redCircleinstance.current?.setVisible(false);
+					nearbyMarkersInstance.current?.forEach((marker) => {
+						marker.setVisible(false);
+					});
+					console.log('map click');
+					mapPreviousClickedLocation.current = Clickedlocationinstance.current;
+					// findNearbyPlaces(Clickedlocationinstance.current);
+					createCircles(Clickedlocationinstance.current);
+				} else if (Clickedlocationinstance.current === mapPreviousClickedLocation.current) {
+					console.log('xd');
+					return;
+				}
+			}
+		}
+	}, [count]);
 
 	return <div ref={mapRef as LegacyRef<HTMLDivElement>} className='map' />;
 };
@@ -217,6 +259,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation }) => {
 export default Map;
 
 //TODO:
+// 2. dodać przycisk do wyszukiwania za jednym razem miejsc w pobliżu, żeby nie powtarzać kodu 3 razy dla wyszukiwania miejsc.
 // 3. dodaj funkcjonalność że do znacznika który jest najbliżej startowego znacznika wyświetlana jest odrazu droga.
 // 4. dodaj możliwość kliknięcia na pozostałe znaczniki i wyświetlenia do nich drogi.
 // 5. informacja o dokładnej odległości między zaznaczonymi znacznikami i czasie podróży.
@@ -226,3 +269,4 @@ export default Map;
 // 8. poprawić mape bo jak się oddala na maxa to nie ma ograniczenia i mapa się spłaszcza i zostaja szare ramki do okoła.
 // 9. poprawić i potweakować z wyszukiwaniem interesującyh nas miejsc w okół.
 // 10. stworzyć możliwość wybierania kategorii miejsc które interesują użytkownika i zaadaptować logikę do tego.
+// 11. ew. poprawić wyglad UI
