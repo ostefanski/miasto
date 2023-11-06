@@ -15,7 +15,8 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 	const redCircleinstance = useRef<google.maps.Circle | null>(null);
 	const greenCircleinstance = useRef<google.maps.Circle | null>(null);
 	const nearbyMarkersInstance = useRef<google.maps.Marker[] | null>(null);
-	const previousCount = useRef<number>();
+	// const previousCount = useRef<number>();
+	const previousMarkerInstancePosition = useRef<google.maps.LatLng | null | undefined>(null);
 
 	const getCityPosition = (city: string): google.maps.LatLngLiteral => {
 		switch (city) {
@@ -145,6 +146,15 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 				const clickedLocation = event.latLng;
 				markerInstance.current?.setPosition(clickedLocation);
 				markerInstance.current?.setVisible(true);
+
+				// clear the previous circles and markers if they exist
+				if (greenCircleinstance.current?.getVisible()) {
+					greenCircleinstance.current?.setVisible(false);
+					redCircleinstance.current?.setVisible(false);
+					nearbyMarkersInstance.current?.forEach((marker) => {
+						marker.setVisible(false);
+					});
+				}
 			});
 		}
 	};
@@ -159,6 +169,15 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 				if (markerInstance.current) {
 					markerInstance.current.setPosition(selectedLocation);
 					markerInstance.current?.setVisible(true);
+
+					// clear the previous circles and markers if they exist
+					if (greenCircleinstance.current?.getVisible()) {
+						greenCircleinstance.current?.setVisible(false);
+						redCircleinstance.current?.setVisible(false);
+						nearbyMarkersInstance.current?.forEach((marker) => {
+							marker.setVisible(false);
+						});
+					}
 				}
 			}
 		}
@@ -171,25 +190,30 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 			if (markerInstance.current) {
 				markerInstance.current.setPosition(newCityPosition);
 				markerInstance.current.setVisible(true);
-			}
-		}
-	}, [chosenCity]);
 
-	useEffect(() => {
-		if (mapInstance.current) {
-			if (markerInstance.current) {
-				const markerPosition = markerInstance.current.getPosition();
-				if (count !== previousCount.current) {
-					console.log('cleared');
-					previousCount.current = count;
+				// clear the previous circles and markers if they exist
+				if (greenCircleinstance.current?.getVisible()) {
 					greenCircleinstance.current?.setVisible(false);
 					redCircleinstance.current?.setVisible(false);
 					nearbyMarkersInstance.current?.forEach((marker) => {
 						marker.setVisible(false);
 					});
 				}
-				// findNearbyPlaces(markerPosition);
-				createCircles(markerPosition);
+			}
+		}
+	}, [chosenCity]);
+
+	useEffect(() => {
+		if (mapInstance.current) {
+			if (markerInstance.current?.getVisible()) {
+				const markerPosition = markerInstance.current.getPosition();
+
+				// if marker position is different than previous one only then create new circles and markers
+				if (markerPosition !== previousMarkerInstancePosition.current) {
+					previousMarkerInstancePosition.current = markerPosition;
+					// findNearbyPlaces(markerPosition);
+					createCircles(markerPosition);
+				}
 			}
 		}
 	}, [count]);
@@ -200,7 +224,6 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 export default Map;
 
 //TODO:
-// 2. dodać przycisk do wyszukiwania za jednym razem miejsc w pobliżu, żeby nie powtarzać kodu 3 razy dla wyszukiwania miejsc.
 // 3. dodaj funkcjonalność że do znacznika który jest najbliżej startowego znacznika wyświetlana jest odrazu droga.
 // 4. dodaj możliwość kliknięcia na pozostałe znaczniki i wyświetlenia do nich drogi.
 // 5. informacja o dokładnej odległości między zaznaczonymi znacznikami i czasie podróży.
