@@ -15,8 +15,8 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 	const redCircleinstance = useRef<google.maps.Circle | null>(null);
 	const greenCircleinstance = useRef<google.maps.Circle | null>(null);
 	const nearbyMarkersInstance = useRef<google.maps.Marker[] | null>(null);
-	// const previousCount = useRef<number>();
 	const previousMarkerInstancePosition = useRef<google.maps.LatLng | null | undefined>(null);
+	const directionsRenderinstance = useRef<google.maps.DirectionsRenderer | null>(null);
 
 	const getCityPosition = (city: string): google.maps.LatLngLiteral => {
 		switch (city) {
@@ -94,12 +94,25 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 
 		const nearbyMarkers: google.maps.Marker[] = [];
 
+		let nearestPlace: google.maps.places.PlaceResult | null = null;
+		let nearestDistance = Number.POSITIVE_INFINITY;
+
 		// Send the nearby search request
 		service.nearbySearch(request, (results, status) => {
 			if (status === google.maps.places.PlacesServiceStatus.OK && results) {
 				// Loop through the results and add markers to the map
 				results.forEach((place) => {
 					if (place.geometry && place.geometry.location) {
+						const distance = google.maps.geometry.spherical.computeDistanceBetween(
+							defaultLocation,
+							place.geometry.location
+						);
+
+						if (distance < nearestDistance) {
+							nearestDistance = distance;
+							nearestPlace = place;
+						}
+
 						const nearbyMarker = new google.maps.Marker({
 							position: place.geometry.location,
 							map: mapInstance.current,
@@ -108,11 +121,78 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 						});
 
 						nearbyMarkers.push(nearbyMarker);
+
+						// event listener for clicking any marker to show directions
+						google.maps.event.addListener(nearbyMarker, 'click', () => {
+							clearDirections(); // clear directions from previous marker
+							CalculateAndDisplayDirections(defaultLocation, place.geometry?.location);
+						});
 					}
 				});
+				// display direction of nearest place by default
+				if (nearestPlace) {
+					CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location);
+				}
 			}
 		});
 		nearbyMarkersInstance.current = nearbyMarkers;
+	};
+
+	const CalculateAndDisplayDirections = (origin, destination) => {
+		const directionsService = new google.maps.DirectionsService();
+		// const directionsRender = new google.maps.DirectionsRenderer();
+
+		if (directionsRenderinstance.current === null) {
+			directionsRenderinstance.current = new google.maps.DirectionsRenderer({
+				preserveViewport: true,
+			});
+		}
+
+		// const directionsRender = directionsRenderinstance.current;
+
+		directionsRenderinstance.current.setOptions({
+			suppressMarkers: true,
+			polylineOptions: {
+				zIndex: 50,
+				strokeColor: '#1976D2',
+				strokeWeight: 5,
+			},
+		});
+
+		directionsRenderinstance.current.setMap(mapInstance.current);
+
+		const request = {
+			origin: origin,
+			destination: destination,
+			travelMode: google.maps.TravelMode.WALKING,
+		};
+
+		directionsService.route(request, (response, status) => {
+			if (status === google.maps.DirectionsStatus.OK && directionsRenderinstance.current) {
+				mapInstance.current?.setZoom(15);
+				directionsRenderinstance.current.setDirections(response);
+			} else {
+				console.error('Error while calculating directions', status);
+			}
+		});
+	};
+
+	const clearDirections = () => {
+		if (directionsRenderinstance.current !== null) {
+			console.log('cleared');
+			directionsRenderinstance.current.setMap(null); // detach directions from the map
+			// directionsRenderinstance.current.setDirections(null); // Clear the directions by setting it to null
+		}
+	};
+
+	const clearCirclesandNearbyMarkers = () => {
+		if (greenCircleinstance.current?.getVisible()) {
+			greenCircleinstance.current?.setVisible(false);
+			redCircleinstance.current?.setVisible(false);
+			nearbyMarkersInstance.current?.forEach((marker) => {
+				marker.setVisible(false);
+			});
+		}
 	};
 
 	const initMapWithMarker = async () => {
@@ -134,6 +214,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 			});
 
 			markerInstance.current.addListener('click', () => {
+				clearDirections();
 				markerInstance.current?.setVisible(false);
 				greenCircleinstance.current?.setVisible(false);
 				redCircleinstance.current?.setVisible(false);
@@ -146,15 +227,13 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 				const clickedLocation = event.latLng;
 				markerInstance.current?.setPosition(clickedLocation);
 				markerInstance.current?.setVisible(true);
+				mapInstance.current?.panTo(clickedLocation);
+				mapInstance.current?.setZoom(12);
 
+				// clear previous directions if they exist
+				clearDirections();
 				// clear the previous circles and markers if they exist
-				if (greenCircleinstance.current?.getVisible()) {
-					greenCircleinstance.current?.setVisible(false);
-					redCircleinstance.current?.setVisible(false);
-					nearbyMarkersInstance.current?.forEach((marker) => {
-						marker.setVisible(false);
-					});
-				}
+				clearCirclesandNearbyMarkers();
 			});
 		}
 	};
@@ -169,15 +248,12 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 				if (markerInstance.current) {
 					markerInstance.current.setPosition(selectedLocation);
 					markerInstance.current?.setVisible(true);
+					mapInstance.current.setZoom(12);
 
+					// clear previous directions if they exist
+					clearDirections();
 					// clear the previous circles and markers if they exist
-					if (greenCircleinstance.current?.getVisible()) {
-						greenCircleinstance.current?.setVisible(false);
-						redCircleinstance.current?.setVisible(false);
-						nearbyMarkersInstance.current?.forEach((marker) => {
-							marker.setVisible(false);
-						});
-					}
+					clearCirclesandNearbyMarkers();
 				}
 			}
 		}
@@ -190,15 +266,12 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 			if (markerInstance.current) {
 				markerInstance.current.setPosition(newCityPosition);
 				markerInstance.current.setVisible(true);
+				mapInstance.current.setZoom(12);
 
+				// clear previous directions if they exist
+				clearDirections();
 				// clear the previous circles and markers if they exist
-				if (greenCircleinstance.current?.getVisible()) {
-					greenCircleinstance.current?.setVisible(false);
-					redCircleinstance.current?.setVisible(false);
-					nearbyMarkersInstance.current?.forEach((marker) => {
-						marker.setVisible(false);
-					});
-				}
+				clearCirclesandNearbyMarkers();
 			}
 		}
 	}, [chosenCity]);
@@ -211,8 +284,9 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count }) => {
 				// if marker position is different than previous one only then create new circles and markers
 				if (markerPosition !== previousMarkerInstancePosition.current) {
 					previousMarkerInstancePosition.current = markerPosition;
-					// findNearbyPlaces(markerPosition);
+					findNearbyPlaces(markerPosition);
 					createCircles(markerPosition);
+					mapInstance.current.setZoom(14);
 				}
 			}
 		}

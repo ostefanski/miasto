@@ -6,7 +6,6 @@ const apiKey: string = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 export const GoogleApiLoader = new Loader({
 	apiKey,
 	version: 'weekly',
-	libraries: ['places'],
 });
 
 // Function to initialize the map
