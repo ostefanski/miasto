@@ -12,13 +12,20 @@ export const GoogleApiLoader = new Loader({
 export const initMap = async (map: HTMLElement, position: google.maps.LatLngLiteral) => {
 	const mapInitialization = await GoogleApiLoader.importLibrary('maps');
 
+	const maxLat = (Math.atan(Math.sinh(Math.PI)) * 180) / Math.PI;
+
 	// map options
 	const mapOptions = {
 		center: position, // Set initial center
 		zoom: 12,
+		minZoom: 3,
 		disableDefaultUI: true,
 		clickableIcons: false,
 		styles: mapStyle,
+		restriction: {
+			latLngBounds: { north: maxLat, south: -maxLat, west: -180, east: 180 },
+			strictBounds: true,
+		},
 	};
 
 	return new mapInitialization.Map(map, mapOptions);
