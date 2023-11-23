@@ -111,42 +111,54 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 		});
 
 		const nearbyMarkers: google.maps.Marker[] = [];
-		const nearbyDurations: number[] = [];
-		let nearestPlace: google.maps.places.PlaceResult | null = null;
-
+		// const nearbyDurations: number[] = [];
+		const durationPromises: Promise<number | null>[] = [];
 		// Send the nearby search request
 
-		for (const place of results) {
+		results.forEach((place) => {
 			if (place.geometry && place.geometry.location) {
-				const duration = await calculateDuration(defaultLocation, place.geometry.location);
-				const durationNumber = parseFloat(duration as string);
+				const durationPromise = calculateDuration(defaultLocation, place.geometry.location)
+					.then((duration) => {
+						const durationNumber = parseFloat(duration as string);
 
-				nearbyDurations.push(durationNumber);
+						if (!isNaN(durationNumber) && durationNumber <= 15) {
+							const nearbyMarker = new google.maps.Marker({
+								position: place.geometry?.location,
+								map: mapInstance.current,
+								title: place.name,
+								visible: true,
+							});
 
-				if (!isNaN(durationNumber) && durationNumber <= 15) {
-					const nearbyMarker = new google.maps.Marker({
-						position: place.geometry.location,
-						map: mapInstance.current,
-						title: place.name,
-						visible: true,
+							google.maps.event.addListener(nearbyMarker, 'click', () => {
+								clearDirections();
+								CalculateAndDisplayDirections(defaultLocation, place.geometry?.location);
+								fetchPlaceDetails(service, place.place_id ?? '');
+							});
+
+							nearbyMarkers.push(nearbyMarker);
+						}
+
+						return durationNumber;
+					})
+					.catch((error) => {
+						console.error('Error calculating duration:', error);
+						return null;
 					});
 
-					nearbyMarkers.push(nearbyMarker);
-
-					google.maps.event.addListener(nearbyMarker, 'click', () => {
-						clearDirections();
-						CalculateAndDisplayDirections(defaultLocation, place.geometry?.location);
-						fetchPlaceDetails(service, place.place_id ?? '');
-					});
-				}
+				durationPromises.push(durationPromise);
 			}
-		}
+		});
+
+		const nearbyDurations = await Promise.all(durationPromises);
 
 		nearbyMarkersInstance.current = nearbyMarkers;
 
-		const minDurationIndex = nearbyDurations.indexOf(Math.min(...nearbyDurations));
+		const minDurationIndex = nearbyDurations.indexOf(
+			Math.min(...(nearbyDurations.filter((duration) => duration !== null) as number[]))
+		);
+
 		if (minDurationIndex !== -1 && nearbyMarkers.length !== 0) {
-			nearestPlace = results[minDurationIndex];
+			const nearestPlace = results[minDurationIndex];
 			CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location);
 			fetchPlaceDetails(service, nearestPlace.place_id ?? '');
 		}
@@ -291,13 +303,37 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 				map: mapInstance.current,
 				visible: false,
 				icon: blueMarkerIcon,
+				draggable: true,
+			});
+
+			let isMarkerBeingDragged = false;
+
+			markerInstance.current.addListener('dragstart', () => {
+				isMarkerBeingDragged = true;
+			});
+
+			markerInstance.current.addListener('dragend', () => {
+				isMarkerBeingDragged = false;
+
+				clearDirections();
+				clearCirclesandNearbyMarkers();
+				clearPlaceDetails();
+
+				const draggedLocation = markerInstance.current?.getPosition();
+
+				if (draggedLocation) {
+					mapInstance.current?.panTo(draggedLocation);
+					mapInstance.current?.setZoom(12);
+				}
 			});
 
 			markerInstance.current.addListener('click', () => {
-				clearDirections();
-				clearCirclesandNearbyMarkers();
-				markerInstance.current?.setVisible(false);
-				clearPlaceDetails();
+				if (!isMarkerBeingDragged) {
+					clearDirections();
+					clearCirclesandNearbyMarkers();
+					markerInstance.current?.setVisible(false);
+					clearPlaceDetails();
+				}
 			});
 
 			mapInstance.current.addListener('click', (event) => {
@@ -381,7 +417,6 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 export default Map;
 
 //TODO:
-// 5. informacja o dokładnej odległości między zaznaczonymi znacznikami i czasie podróży.
 // 6. zmodyfikuj działanie znaczników i obszarów, jeżeli w obszarze zielonym nie ma żadnych znaczników, to powinny się
 // pojawić pozostałe znaczniki z obszaru czerwonego o ile takowe istnieja.
 // 7. dodać dodatkowo clusterowanie znaczników, żeby rozdzielały się w grupy w zależności od ich ilości w danym miejscu.
