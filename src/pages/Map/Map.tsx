@@ -39,13 +39,13 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 		}
 	};
 
-	const createCircles = async (defaultLocation) => {
+	const createCircles = async (defaultLocation, bool) => {
 		if (mapInstance.current === null) {
 			console.error('Map is not initialized.');
 			return;
 		}
 
-		if (defaultLocation) {
+		if (defaultLocation && bool === true) {
 			//red Circle
 			redCircleinstance.current = new google.maps.Circle({
 				strokeColor: '#FF5252',
@@ -62,7 +62,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 				center: defaultLocation,
 				radius: 2200,
 			});
-
+		} else if (defaultLocation && bool === false) {
 			// green Circle
 			greenCircleinstance.current = new google.maps.Circle({
 				strokeColor: '#8BC34A',
@@ -78,6 +78,22 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 				map: mapInstance.current,
 				center: defaultLocation,
 				radius: 1100,
+			});
+
+			redCircleinstance.current = new google.maps.Circle({
+				strokeColor: '#FF5252',
+				strokeOpacity: 0.8,
+				strokeWeight: 2,
+				fillColor: '#FF5252',
+				fillOpacity: 0.05,
+				zIndex: 2,
+				clickable: false,
+				draggable: false,
+				editable: false,
+				visible: true,
+				map: mapInstance.current,
+				center: defaultLocation,
+				radius: 2200,
 			});
 		}
 	};
@@ -100,6 +116,14 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 			types: types,
 		};
 
+		//Define request for redCircle
+		const requestRedCircle = {
+			location: defaultLocation,
+			radius: 2200,
+			types: types,
+		};
+
+		// google.maps.places.PlaceResult[]
 		const results: google.maps.places.PlaceResult[] = await new Promise((resolve) => {
 			service.nearbySearch(request, (results, status) => {
 				if (status === google.maps.places.PlacesServiceStatus.OK && results) {
@@ -110,12 +134,26 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 			});
 		});
 
+		const resultsRedCircle: google.maps.places.PlaceResult[] = await new Promise((resolve) => {
+			service.nearbySearch(requestRedCircle, (resultsRedCircle, status) => {
+				if (status === google.maps.places.PlacesServiceStatus.OK && resultsRedCircle) {
+					resolve(resultsRedCircle);
+				} else {
+					resolve([]);
+				}
+			});
+		});
+
 		const nearbyMarkers: google.maps.Marker[] = [];
 		// const nearbyDurations: number[] = [];
 		const durationPromises: Promise<number | null>[] = [];
+
+		const durationPromisesRedCircle: Promise<number | null>[] = [];
+
+		let createGreenAndRedCircles = false;
 		// Send the nearby search request
 
-		results.forEach((place) => {
+		const resultsPromises = results.map((place) => {
 			if (place.geometry && place.geometry.location) {
 				const durationPromise = calculateDuration(defaultLocation, place.geometry.location)
 					.then((duration) => {
@@ -136,6 +174,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 							});
 
 							nearbyMarkers.push(nearbyMarker);
+							createGreenAndRedCircles = true; // Mark that the green and red circle is created
 						}
 
 						return durationNumber;
@@ -146,21 +185,84 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 					});
 
 				durationPromises.push(durationPromise);
+				return durationPromise; // Return the promise for this place
 			}
+			return Promise.resolve(null); // Placeholder promise for places without geometry
 		});
 
-		const nearbyDurations = await Promise.all(durationPromises);
+		await Promise.all(resultsPromises); // Wait for all promises from the results block to resolve
+
+		if (nearbyMarkers.length == 0 && createGreenAndRedCircles === false) {
+			resultsRedCircle.forEach((place) => {
+				if (place.geometry && place.geometry.location) {
+					const durationPromise = calculateDuration(defaultLocation, place.geometry.location)
+						.then((duration) => {
+							const durationNumber = parseFloat(duration as string);
+
+							if (!isNaN(durationNumber) && durationNumber > 15 && durationNumber <= 30) {
+								const nearbyMarker = new google.maps.Marker({
+									position: place.geometry?.location,
+									map: mapInstance.current,
+									title: place.name,
+									visible: true,
+								});
+
+								google.maps.event.addListener(nearbyMarker, 'click', () => {
+									clearDirections();
+									CalculateAndDisplayDirections(defaultLocation, place.geometry?.location);
+									fetchPlaceDetails(service, place.place_id ?? '');
+								});
+
+								nearbyMarkers.push(nearbyMarker);
+							}
+
+							return durationNumber;
+						})
+						.catch((error) => {
+							console.error('Error calculating duration:', error);
+							return null;
+						});
+
+					durationPromisesRedCircle.push(durationPromise);
+				}
+			});
+		}
+
+		const [nearbyDurations, nearbyRedCircleDurations] = await Promise.all([
+			Promise.all(durationPromises),
+			Promise.all(durationPromisesRedCircle),
+		]);
 
 		nearbyMarkersInstance.current = nearbyMarkers;
 
-		const minDurationIndex = nearbyDurations.indexOf(
-			Math.min(...(nearbyDurations.filter((duration) => duration !== null) as number[]))
-		);
+		if (createGreenAndRedCircles) {
+			if (nearbyRedCircleDurations && nearbyDurations) {
+				// create green and red circles
+				createCircles(markerInstance.current?.getPosition(), false);
 
-		if (minDurationIndex !== -1 && nearbyMarkers.length !== 0) {
-			const nearestPlace = results[minDurationIndex];
-			CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location);
-			fetchPlaceDetails(service, nearestPlace.place_id ?? '');
+				const minDurationIndex = nearbyDurations.indexOf(
+					Math.min(...(nearbyDurations.filter((duration) => duration !== null) as number[]))
+				);
+
+				if (minDurationIndex !== -1 && nearbyMarkers.length !== 0) {
+					const nearestPlace = results[minDurationIndex];
+					CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location);
+					fetchPlaceDetails(service, nearestPlace.place_id ?? '');
+				}
+			}
+		} else {
+			// create only red circle
+			createCircles(markerInstance.current?.getPosition(), true);
+
+			const minDurationIndex = nearbyRedCircleDurations.indexOf(
+				Math.min(...(nearbyRedCircleDurations.filter((duration) => duration !== null) as number[]))
+			);
+
+			if (minDurationIndex !== -1 && nearbyMarkers.length !== 0) {
+				const nearestPlace = resultsRedCircle[minDurationIndex];
+				CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location);
+				fetchPlaceDetails(service, nearestPlace.place_id ?? '');
+			}
 		}
 	};
 
@@ -268,8 +370,13 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 	};
 
 	const clearCirclesandNearbyMarkers = () => {
-		if (greenCircleinstance.current?.getVisible()) {
+		if (greenCircleinstance.current?.getVisible() && redCircleinstance.current?.getVisible()) {
 			greenCircleinstance.current?.setVisible(false);
+			redCircleinstance.current?.setVisible(false);
+			nearbyMarkersInstance.current?.forEach((marker) => {
+				marker.setVisible(false);
+			});
+		} else if (redCircleinstance.current?.getVisible()) {
 			redCircleinstance.current?.setVisible(false);
 			nearbyMarkersInstance.current?.forEach((marker) => {
 				marker.setVisible(false);
@@ -404,7 +511,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 				if (markerPosition !== previousMarkerInstancePosition.current) {
 					previousMarkerInstancePosition.current = markerPosition;
 					findNearbyPlaces(markerPosition);
-					createCircles(markerPosition);
+					// createCircles(markerPosition);
 					mapInstance.current.setZoom(14);
 				}
 			}
