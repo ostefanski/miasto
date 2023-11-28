@@ -99,7 +99,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 	};
 
 	const findNearbyPlaces = async (defaultLocation) => {
-		const types = ['university']; // 'hospital', , 'bus_station', 'police', 'doctor', 'school', 'bank', 'store'
+		const types = ['university', 'bank']; // 'hospital', , 'bus_station', 'police', 'doctor', 'school', 'bank', 'store'
 
 		if (mapInstance.current === null) {
 			console.error('Map is not initialized.');
@@ -161,6 +161,8 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 
 			allResultsRedCircle.push(...resultsRedCircle);
 
+			let checkIfGreenCircleEmptyOfMarkers = true;
+
 			// Send the nearby search request
 
 			const resultsPromises = results.map((place) => {
@@ -185,6 +187,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 
 								nearbyMarkers.push(nearbyMarker);
 								createGreenAndRedCircles = true; // Mark that the green and red circle is created
+								checkIfGreenCircleEmptyOfMarkers = false; // the green circle for some type of place has markers below 15min
 							}
 
 							return durationNumber;
@@ -202,7 +205,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 
 			await Promise.all(resultsPromises); // Wait for all promises from the results block to resolve
 
-			if (nearbyMarkers.length == 0 && createGreenAndRedCircles === false) {
+			if (checkIfGreenCircleEmptyOfMarkers === true) {
 				resultsRedCircle.forEach((place) => {
 					if (place.geometry && place.geometry.location) {
 						const durationPromise = calculateDuration(defaultLocation, place.geometry.location)
