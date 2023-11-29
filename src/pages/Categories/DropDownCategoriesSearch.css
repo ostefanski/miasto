@@ -1,0 +1,7 @@
+.test {
+	width: 400px;
+	user-select: none;
+	position: relative;
+	margin-top: 20px;
+	z-index: 10;
+}

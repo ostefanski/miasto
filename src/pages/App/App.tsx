@@ -5,6 +5,7 @@ import Map from 'src/pages/Map/Map';
 import AutoCompleteSearchBar from 'src/pages/AutoComplete/AutoCompleteSearchBar';
 import SearchNearbyButton from 'src/pages/SearchNearby/SearchNearbyButton';
 import ShowPlaceDetails from 'src/pages/ShowDetails/ShowPlaceDetails';
+import DropDownCategoriesSearch from 'src/pages/Categories/DropDownCategoriesSearch';
 
 function App() {
 	const [chosenCity, setChosenCity] = useState('Wybierz konkretne miasto');
@@ -26,13 +27,22 @@ function App() {
 				<ShowPlaceDetails showPlaceInfo={showPlaceInfo} />
 			</div>
 			<div className='main-container'>
-				<DropDownButton chosenCity={chosenCity} setChosenCity={setChosenCity} />
-				<Map
-					chosenCity={chosenCity}
-					selectedLocation={selectedLocation}
-					count={count}
-					setShowPlaceInfo={setShowPlaceInfo}
-				/>
+				<div className='dropdowns'>
+					<div className='dropdown'>
+						<DropDownButton chosenCity={chosenCity} setChosenCity={setChosenCity} />
+					</div>
+					<div className='dropdown'>
+						<DropDownCategoriesSearch />
+					</div>
+				</div>
+				<div className='map-container'>
+					<Map
+						chosenCity={chosenCity}
+						selectedLocation={selectedLocation}
+						count={count}
+						setShowPlaceInfo={setShowPlaceInfo}
+					/>
+				</div>
 			</div>
 		</div>
 	);

@@ -110,7 +110,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 		const service = new google.maps.places.PlacesService(mapInstance.current);
 
 		const nearbyMarkers: google.maps.Marker[] = [];
-		// const nearbyDurations: number[] = [];
+
 		const durationPromises: Promise<number | null>[] = [];
 
 		const durationPromisesRedCircle: Promise<number | null>[] = [];
@@ -198,7 +198,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 						});
 
 					durationPromises.push(durationPromise);
-					return durationPromise; // Return the promise for this place
+					return durationPromise; // Return the duration promise for this place
 				}
 				return Promise.resolve(null); // Placeholder promise for places without geometry
 			});
