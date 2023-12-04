@@ -13,7 +13,6 @@
 	width: 22%;
 	color: #fff;
 }
-
 .dropdowns {
 	width: 80%;
 	display: flex;
@@ -23,7 +22,26 @@
 }
 
 .dropdown {
-	margin: 0 50px;
+	display: inline-block;
+}
+
+.dropdown:nth-of-type(odd) {
+	margin-right: 50px;
+}
+
+@media screen and (max-width: 768px) {
+	.dropdowns {
+		flex-flow: column;
+	}
+
+	.dropdown {
+		width: 100%;
+		margin-bottom: 10px;
+	}
+
+	.dropdown:nth-of-type(odd) {
+		margin-right: 0;
+	}
 }
 
 .main-container {
@@ -38,10 +56,19 @@
 
 .map-container {
 	display: flex;
+	position: relative;
 	flex-grow: 1;
 	margin-bottom: 40px;
 	width: 100%;
 	justify-content: flex-start;
 	flex-flow: column nowrap;
 	align-items: center;
+}
+
+.over_map {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 10%; /* Adjusted to 10% to match 80% width of the map-container so it is correct with the 80% width of map */
+	z-index: 1;
 }

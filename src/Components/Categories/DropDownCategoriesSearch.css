@@ -1,0 +1,12 @@
+.dropdown {
+	width: 400px;
+	user-select: none;
+	position: relative;
+	margin-top: 20px;
+	z-index: 10;
+}
+
+.dropdown .css-1h51icj-MuiAutocomplete-root .MuiAutocomplete-inputRoot {
+	flex-wrap: nowrap;
+	overflow: hidden;
+}

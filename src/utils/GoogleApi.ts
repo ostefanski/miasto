@@ -28,7 +28,9 @@ export const initMap = async (map: HTMLElement, position: google.maps.LatLngLite
 		},
 	};
 
-	return new mapInitialization.Map(map, mapOptions);
+	const mapInit = new mapInitialization.Map(map, mapOptions);
+
+	return mapInit;
 };
 
 // Function to initialize the Autocomplete service

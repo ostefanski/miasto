@@ -14,9 +14,18 @@ type MapProps = {
 	selectedLocation: google.maps.LatLng | undefined;
 	count: number;
 	setShowPlaceInfo: React.Dispatch<React.SetStateAction<PlaceInfo>>;
+	categoriesTypes: never[];
+	activeTransportButton: string;
 };
 
-const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowPlaceInfo }) => {
+const Map: React.FC<MapProps> = ({
+	chosenCity,
+	selectedLocation,
+	count,
+	setShowPlaceInfo,
+	categoriesTypes,
+	activeTransportButton,
+}) => {
 	const mapRef = useRef<HTMLElement | null>(null);
 	const mapInstance = useRef<google.maps.Map | null>(null);
 	const markerInstance = useRef<google.maps.Marker | null>(null);
@@ -25,6 +34,8 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 	const nearbyMarkersInstance = useRef<google.maps.Marker[] | null>(null);
 	const previousMarkerInstancePosition = useRef<google.maps.LatLng | null | undefined>(null);
 	const directionsRenderinstance = useRef<google.maps.DirectionsRenderer | null>(null);
+	const categoriesTypesInstance = useRef<never[] | null>(null);
+	const transportationModeInstance = useRef<string>();
 
 	const getCityPosition = (city: string): google.maps.LatLngLiteral => {
 		switch (city) {
@@ -99,7 +110,10 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 	};
 
 	const findNearbyPlaces = async (defaultLocation) => {
-		const types = ['university', 'bank']; // 'hospital', , 'bus_station', 'police', 'doctor', 'school', 'bank', 'store'
+		// const types = ['university', 'bank']; // 'hospital', , 'bus_station', 'police', 'doctor', 'school', 'bank', 'store'
+
+		const types = categoriesTypes;
+		categoriesTypesInstance.current = categoriesTypes;
 
 		if (mapInstance.current === null) {
 			console.error('Map is not initialized.');
@@ -167,7 +181,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 
 			const resultsPromises = results.map((place) => {
 				if (place.geometry && place.geometry.location) {
-					const durationPromise = calculateDuration(defaultLocation, place.geometry.location)
+					const durationPromise = calculateDuration(defaultLocation, place.geometry.location, activeTransportButton)
 						.then((duration) => {
 							const durationNumber = parseFloat(duration as string);
 
@@ -181,7 +195,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 
 								google.maps.event.addListener(nearbyMarker, 'click', () => {
 									clearDirections();
-									CalculateAndDisplayDirections(defaultLocation, place.geometry?.location);
+									CalculateAndDisplayDirections(defaultLocation, place.geometry?.location, activeTransportButton);
 									fetchPlaceDetails(service, place.place_id ?? '');
 								});
 
@@ -208,7 +222,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 			if (checkIfGreenCircleEmptyOfMarkers === true) {
 				resultsRedCircle.forEach((place) => {
 					if (place.geometry && place.geometry.location) {
-						const durationPromise = calculateDuration(defaultLocation, place.geometry.location)
+						const durationPromise = calculateDuration(defaultLocation, place.geometry.location, activeTransportButton)
 							.then((duration) => {
 								const durationNumber = parseFloat(duration as string);
 
@@ -222,7 +236,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 
 									google.maps.event.addListener(nearbyMarker, 'click', () => {
 										clearDirections();
-										CalculateAndDisplayDirections(defaultLocation, place.geometry?.location);
+										CalculateAndDisplayDirections(defaultLocation, place.geometry?.location, activeTransportButton);
 										fetchPlaceDetails(service, place.place_id ?? '');
 									});
 
@@ -260,7 +274,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 
 				if (minDurationIndex !== -1 && nearbyMarkers.length !== 0) {
 					const nearestPlace = allResults[minDurationIndex];
-					CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location);
+					CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location, activeTransportButton);
 					fetchPlaceDetails(service, nearestPlace.place_id ?? '');
 				}
 			}
@@ -274,7 +288,7 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 
 			if (minDurationIndex !== -1 && nearbyMarkers.length !== 0) {
 				const nearestPlace = allResultsRedCircle[minDurationIndex];
-				CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location);
+				CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location, activeTransportButton);
 				fetchPlaceDetails(service, nearestPlace.place_id ?? '');
 			}
 		}
@@ -300,17 +314,14 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 		});
 	};
 
-	const CalculateAndDisplayDirections = (origin, destination) => {
+	const CalculateAndDisplayDirections = (origin, destination, mode) => {
 		const directionsService = new google.maps.DirectionsService();
-		// const directionsRender = new google.maps.DirectionsRenderer();
 
 		if (directionsRenderinstance.current === null) {
 			directionsRenderinstance.current = new google.maps.DirectionsRenderer({
 				preserveViewport: true,
 			});
 		}
-
-		// const directionsRender = directionsRenderinstance.current;
 
 		directionsRenderinstance.current.setOptions({
 			suppressMarkers: true,
@@ -323,11 +334,21 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 
 		directionsRenderinstance.current.setMap(mapInstance.current);
 
-		const request = {
-			origin: origin,
-			destination: destination,
-			travelMode: google.maps.TravelMode.WALKING,
-		};
+		let request;
+
+		if (mode === 'walk') {
+			request = {
+				origin: origin,
+				destination: destination,
+				travelMode: google.maps.TravelMode.WALKING,
+			};
+		} else if (mode === 'bike') {
+			request = {
+				origin: origin,
+				destination: destination,
+				travelMode: google.maps.TravelMode.BICYCLING,
+			};
+		}
 
 		directionsService.route(request, (response, status) => {
 			if (status === google.maps.DirectionsStatus.OK && directionsRenderinstance.current) {
@@ -352,15 +373,27 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 		});
 	};
 
-	const calculateDuration = (origin, destination) => {
+	const calculateDuration = (origin, destination, mode) => {
 		return new Promise((resolve, reject) => {
 			const directionsService = new google.maps.DirectionsService();
 
-			const request = {
-				origin: origin,
-				destination: destination,
-				travelMode: google.maps.TravelMode.WALKING,
-			};
+			let request;
+
+			if (mode === 'walk') {
+				transportationModeInstance.current = mode;
+				request = {
+					origin: origin,
+					destination: destination,
+					travelMode: google.maps.TravelMode.WALKING,
+				};
+			} else if (mode === 'bike') {
+				transportationModeInstance.current = mode;
+				request = {
+					origin: origin,
+					destination: destination,
+					travelMode: google.maps.TravelMode.BICYCLING,
+				};
+			}
 
 			directionsService.route(request, (response, status) => {
 				if (status === google.maps.DirectionsStatus.OK) {
@@ -464,11 +497,8 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 				mapInstance.current?.panTo(clickedLocation);
 				mapInstance.current?.setZoom(12);
 
-				// clear previous directions if they exist
 				clearDirections();
-				// clear the previous circles and markers if they exist
 				clearCirclesandNearbyMarkers();
-				// clear previous place details
 				clearPlaceDetails();
 			});
 		}
@@ -486,11 +516,8 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 					markerInstance.current?.setVisible(true);
 					mapInstance.current.setZoom(12);
 
-					// clear previous directions if they exist
 					clearDirections();
-					// clear the previous circles and markers if they exist
 					clearCirclesandNearbyMarkers();
-					// clear previous place details
 					clearPlaceDetails();
 				}
 			}
@@ -506,11 +533,8 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 				markerInstance.current.setVisible(true);
 				mapInstance.current.setZoom(12);
 
-				// clear previous directions if they exist
 				clearDirections();
-				// clear the previous circles and markers if they exist
 				clearCirclesandNearbyMarkers();
-				// clear previous place details
 				clearPlaceDetails();
 			}
 		}
@@ -527,12 +551,25 @@ const Map: React.FC<MapProps> = ({ chosenCity, selectedLocation, count, setShowP
 					findNearbyPlaces(markerPosition);
 					// createCircles(markerPosition);
 					mapInstance.current.setZoom(14);
+				} else {
+					if (categoriesTypes !== categoriesTypesInstance.current) {
+						clearDirections();
+						clearCirclesandNearbyMarkers();
+						clearPlaceDetails();
+						findNearbyPlaces(markerPosition);
+					}
+					if (activeTransportButton !== transportationModeInstance.current) {
+						clearDirections();
+						clearCirclesandNearbyMarkers();
+						clearPlaceDetails();
+						findNearbyPlaces(markerPosition);
+					}
 				}
 			}
 		}
 	}, [count]);
 
-	return <div ref={mapRef as LegacyRef<HTMLDivElement>} className='map' />;
+	return <div ref={mapRef as LegacyRef<HTMLDivElement>} className='map'></div>;
 };
 
 export default Map;
@@ -541,6 +578,4 @@ export default Map;
 // 6. zmodyfikuj działanie znaczników i obszarów, jeżeli w obszarze zielonym nie ma żadnych znaczników, to powinny się
 // pojawić pozostałe znaczniki z obszaru czerwonego o ile takowe istnieja.
 // 7. dodać dodatkowo clusterowanie znaczników, żeby rozdzielały się w grupy w zależności od ich ilości w danym miejscu.
-// 9. poprawić i potweakować z wyszukiwaniem interesującyh nas miejsc w okół.
-// 10. stworzyć możliwość wybierania kategorii miejsc które interesują użytkownika i zaadaptować logikę do tego.
 // 11. ew. poprawić wyglad UI
