@@ -7,6 +7,7 @@ import SearchNearbyButton from 'src/Components/SearchNearby/SearchNearbyButton';
 import ShowPlaceDetails from 'src/Components/ShowDetails/ShowPlaceDetails';
 import DropDownCategoriesSearch from 'src/Components/Categories/DropDownCategoriesSearch';
 import TransportationButton from 'src/Components/TransportMode/TransportButton';
+import Help from 'src/Components/HelpCenter/Help';
 
 function App() {
 	const [chosenCity, setChosenCity] = useState('');
@@ -30,6 +31,7 @@ function App() {
 				<ShowPlaceDetails showPlaceInfo={showPlaceInfo} />
 			</div>
 			<div className='main-container'>
+				<Help />
 				<div className='dropdowns'>
 					<div className='dropdown'>
 						<DropDownButton chosenCity={chosenCity} setChosenCity={setChosenCity} />

@@ -577,5 +577,4 @@ export default Map;
 //TODO:
 // 6. zmodyfikuj działanie znaczników i obszarów, jeżeli w obszarze zielonym nie ma żadnych znaczników, to powinny się
 // pojawić pozostałe znaczniki z obszaru czerwonego o ile takowe istnieja.
-// 7. dodać dodatkowo clusterowanie znaczników, żeby rozdzielały się w grupy w zależności od ich ilości w danym miejscu.
 // 11. ew. poprawić wyglad UI
