@@ -8,6 +8,7 @@ import ShowPlaceDetails from 'src/Components/ShowDetails/ShowPlaceDetails';
 import DropDownCategoriesSearch from 'src/Components/Categories/DropDownCategoriesSearch';
 import TransportationButton from 'src/Components/TransportMode/TransportButton';
 import Help from 'src/Components/HelpCenter/Help';
+import AreaButton from 'src/Components/AreaMode/AreaButton';
 
 function App() {
 	const [chosenCity, setChosenCity] = useState('');
@@ -49,8 +50,11 @@ function App() {
 						categoriesTypes={categoriesTypes}
 						activeTransportButton={activeTransportButton}
 					/>
-					<div className='over_map'>
+					<div className='over_map_transport'>
 						<TransportationButton setActiveTransportButton={setActiveTransportButton} />
+					</div>
+					<div className='over_map_area'>
+						<AreaButton />
 					</div>
 				</div>
 			</div>

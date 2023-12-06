@@ -552,13 +552,10 @@ const Map: React.FC<MapProps> = ({
 					// createCircles(markerPosition);
 					mapInstance.current.setZoom(14);
 				} else {
-					if (categoriesTypes !== categoriesTypesInstance.current) {
-						clearDirections();
-						clearCirclesandNearbyMarkers();
-						clearPlaceDetails();
-						findNearbyPlaces(markerPosition);
-					}
-					if (activeTransportButton !== transportationModeInstance.current) {
+					if (
+						categoriesTypes !== categoriesTypesInstance.current ||
+						activeTransportButton !== transportationModeInstance.current
+					) {
 						clearDirections();
 						clearCirclesandNearbyMarkers();
 						clearPlaceDetails();

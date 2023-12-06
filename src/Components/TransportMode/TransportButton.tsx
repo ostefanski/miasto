@@ -15,14 +15,14 @@ function TransportationButton({ setActiveTransportButton }) {
 	return (
 		<div className='transportation-button'>
 			<div
-				className={`button-side ${activeButton === 'walk' ? 'active' : ''}`}
+				className='button-side'
 				onClick={handleButtonClick('walk')}
 				style={{ backgroundColor: activeButton === 'walk' ? '#90caf9' : '' }}
 			>
 				<DirectionsWalkIcon />
 			</div>
 			<div
-				className={`button-side ${activeButton === 'bike' ? 'active' : ''}`}
+				className='button-side'
 				onClick={handleButtonClick('bike')}
 				style={{ backgroundColor: activeButton === 'bike' ? '#90caf9' : '' }}
 			>

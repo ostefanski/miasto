@@ -82,10 +82,20 @@
 	align-items: center;
 }
 
-.over_map {
+.over_map_transport {
 	position: absolute;
+	height: 0px; /* without this can't drag the map below the button */
 	top: 0;
 	bottom: 0;
 	left: 10%; /* Adjusted to 10% to match 80% width of the map-container so it is correct with the 80% width of map */
+	z-index: 1;
+}
+
+.over_map_area {
+	position: absolute;
+	height: 0px; /* without this can't drag the map below the button */
+	top: 0;
+	bottom: 0;
+	right: 10%; /* Adjusted to 10% to match 80% width of the map-container so it is correct with the 80% width of map */
 	z-index: 1;
 }
