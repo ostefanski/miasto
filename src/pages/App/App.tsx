@@ -9,6 +9,7 @@ import DropDownCategoriesSearch from 'src/Components/Categories/DropDownCategori
 import TransportationButton from 'src/Components/TransportMode/TransportButton';
 import Help from 'src/Components/HelpCenter/Help';
 import AreaButton from 'src/Components/AreaMode/AreaButton';
+import Menu from 'src/Components/MenuList/Menu';
 
 function App() {
 	const [chosenCity, setChosenCity] = useState('');
@@ -22,6 +23,7 @@ function App() {
 		distance: '',
 	});
 	const [activeTransportButton, setActiveTransportButton] = useState('walk');
+	const [activeAreaButton, setActiveAreaButton] = useState('15');
 
 	return (
 		<div className='app'>
@@ -40,6 +42,7 @@ function App() {
 					<div className='dropdown'>
 						<DropDownCategoriesSearch setCategoriesTypes={setCategoriesTypes} />
 					</div>
+					<Menu />
 				</div>
 				<div className='map-container'>
 					<Map
@@ -49,12 +52,13 @@ function App() {
 						setShowPlaceInfo={setShowPlaceInfo}
 						categoriesTypes={categoriesTypes}
 						activeTransportButton={activeTransportButton}
+						activeAreaButton={activeAreaButton}
 					/>
 					<div className='over_map_transport'>
 						<TransportationButton setActiveTransportButton={setActiveTransportButton} />
 					</div>
 					<div className='over_map_area'>
-						<AreaButton />
+						<AreaButton setActiveAreaButton={setActiveAreaButton} />
 					</div>
 				</div>
 			</div>

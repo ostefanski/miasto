@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import './AreaButton.css';
 
-function AreaButton() {
+function AreaButton({ setActiveAreaButton }) {
 	const [activeButton, setActiveButton] = useState('15');
 
 	const handleButtonClick = (buttonType: string) => () => {
 		console.log(`${buttonType} clicked`);
 		setActiveButton(buttonType);
+		setActiveAreaButton(buttonType);
 	};
 
 	return (

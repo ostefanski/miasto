@@ -13,7 +13,7 @@ const options = [
 	{ value: 'university', label: 'uniwersytet' },
 	{ value: 'bank', label: 'bank' },
 	{ value: 'police', label: 'komisariat' },
-	{ value: 'ATM', label: 'ATM' },
+	{ value: 'atm', label: 'ATM' },
 	{ value: 'bakery', label: 'piekarnia' },
 	{ value: 'bar', label: 'bar' },
 	{ value: 'hair_care', label: 'fryzjer' },
