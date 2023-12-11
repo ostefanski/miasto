@@ -7,3 +7,8 @@
 h3 {
 	text-align: center;
 }
+
+.items:hover {
+	background-color: #ffeecc;
+	cursor: pointer;
+}

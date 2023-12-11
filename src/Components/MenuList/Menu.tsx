@@ -10,8 +10,10 @@ import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import MenuIcon from '@mui/icons-material/Menu';
+import Collapse from '@mui/material/Collapse';
 import './Menu.css';
 import { School, AttachMoney, LocalPolice, Atm } from '@mui/icons-material';
+import { useState } from 'react';
 
 const categoryList = [
 	{
@@ -35,8 +37,13 @@ const categoryList = [
 type Anchor = 'right';
 
 function Menu({ initCategoriesForMenuList, menuGrabberCategoriesList }) {
-	const [state, setState] = React.useState({
+	const [state, setState] = useState({
 		right: false,
+	});
+
+	const [stateCategory, setStateCategory] = useState({
+		right: false,
+		categoryOpen: {}, // Maintain a state for category expansion
 	});
 
 	const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -50,11 +57,21 @@ function Menu({ initCategoriesForMenuList, menuGrabberCategoriesList }) {
 		setState({ ...state, [anchor]: open });
 	};
 
+	const toggleCategory = (category: string) => {
+		setStateCategory((prevState) => ({
+			...prevState,
+			categoryOpen: {
+				...prevState.categoryOpen,
+				[category]: !prevState.categoryOpen[category],
+			},
+		}));
+	};
+
 	const list = (anchor: Anchor) => (
 		<Box
 			className='Menu'
 			role='presentation'
-			onClick={toggleDrawer(anchor, false)}
+			// onClick={toggleDrawer(anchor, false)}
 			onKeyDown={toggleDrawer(anchor, false)}
 		>
 			<h3>Wyświetlone miejsca</h3>
@@ -63,20 +80,39 @@ function Menu({ initCategoriesForMenuList, menuGrabberCategoriesList }) {
 				{initCategoriesForMenuList.map((category) => {
 					const matchedCategory = categoryList.find((item) => item.text === category);
 					const categoryMarkers = menuGrabberCategoriesList[category] || [];
+					const sortedCategoryMarkers = [...categoryMarkers].sort((a, b) => a.duration - b.duration);
 					return (
 						<React.Fragment key={category}>
 							<ListItem disablePadding>
-								<ListItemButton>
+								<ListItemButton onClick={() => toggleCategory(category)}>
 									{matchedCategory && <ListItemIcon>{matchedCategory.icon}</ListItemIcon>}
-									<ListItemText primary={category} />
+									<ListItemText
+										primary={
+											<>
+												{category}
+												<span style={{ color: 'gray', marginLeft: '15px', fontSize: '14px' }}>
+													results: {categoryMarkers.length}
+												</span>
+											</>
+										}
+									/>
 								</ListItemButton>
 							</ListItem>
-							{categoryMarkers &&
-								categoryMarkers.map((marker, index) => (
-									<ListItem key={index}>
-										<ListItemText primary={marker.name} secondary={`Duration: ${marker.duration} min`} />
-									</ListItem>
-								))}
+							<Collapse in={stateCategory.categoryOpen[category]} timeout='auto' unmountOnExit>
+								{/* Expandable content */}
+								<List component='div' disablePadding>
+									{sortedCategoryMarkers.map((marker, index) => (
+										<ListItem key={index}>
+											<ListItemText
+												className='items'
+												primary={marker.name}
+												secondary={`duration: ${marker.duration} min`}
+												onClick={toggleDrawer(anchor, false)}
+											/>
+										</ListItem>
+									))}
+								</List>
+							</Collapse>
 							<Divider />
 						</React.Fragment>
 					);
