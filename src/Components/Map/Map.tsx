@@ -1,4 +1,4 @@
-import { LegacyRef, useEffect, useRef } from 'react';
+import { LegacyRef, SetStateAction, useEffect, useRef } from 'react';
 import './Map.css';
 import { initMap } from 'src/utils/GoogleApi';
 import icons from 'src/assets/icons';
@@ -10,14 +10,21 @@ type PlaceInfo = {
 	distance: string;
 };
 
+type MarkerInfo = {
+	name: string | undefined;
+	duration: number;
+};
+
 type MapProps = {
 	chosenCity: string;
 	selectedLocation: google.maps.LatLng | undefined;
 	count: number;
 	setShowPlaceInfo: React.Dispatch<React.SetStateAction<PlaceInfo>>;
 	categoriesTypes: never[];
+	setInitCategoriesForMenulist: React.Dispatch<SetStateAction<never[]>>;
 	activeTransportButton: string;
 	activeAreaButton: string;
+	setMenuGrabberCategoriesList: React.Dispatch<React.SetStateAction<Record<string, MarkerInfo[]>>>;
 };
 
 const Map: React.FC<MapProps> = ({
@@ -26,8 +33,10 @@ const Map: React.FC<MapProps> = ({
 	count,
 	setShowPlaceInfo,
 	categoriesTypes,
+	setInitCategoriesForMenulist,
 	activeTransportButton,
 	activeAreaButton,
+	setMenuGrabberCategoriesList,
 }) => {
 	interface MarkerWithPlace {
 		marker: google.maps.Marker;
@@ -133,8 +142,18 @@ const Map: React.FC<MapProps> = ({
 		}
 	};
 
+	// Function to load an image asynchronously
+	const loadImage = (url) => {
+		return new Promise((resolve, reject) => {
+			const img = new Image();
+			img.onload = () => resolve(img);
+			img.onerror = (err) => reject(err);
+			img.src = url;
+		});
+	};
+
 	const findNearbyPlaces = async (defaultLocation) => {
-		const types = categoriesTypes;
+		const types: string[] = categoriesTypes;
 		categoriesTypesInstance.current = categoriesTypes;
 
 		if (mapInstance.current === null) {
@@ -149,8 +168,19 @@ const Map: React.FC<MapProps> = ({
 
 		const bikeRadiusValues = [2200, 5000, 10000]; // 2.2km, 5km, 10km
 
+		// details grabber for the menu list of categories
+		const nearbyMarkersInfoGrab: Record<string, MarkerInfo[]> = {
+			university: [],
+			bank: [],
+			police: [],
+			atm: [],
+		};
+
+		const categoriesInit: string[] = []; // array for storing static categories for menu list
 		for (const type of types) {
 			let results;
+
+			categoriesInit.push(type);
 
 			if (activeTransportButton === 'walk') {
 				const requestWalk = {
@@ -204,9 +234,12 @@ const Map: React.FC<MapProps> = ({
 				results = uniqueResultsBike;
 			}
 
-			const durationPromises = (results as google.maps.places.PlaceResult[]).map((place) => {
+			const durationPromises = (results as google.maps.places.PlaceResult[]).map(async (place) => {
 				if (place.geometry && place.geometry.location) {
 					const iconPath = icons[type];
+
+					// Load the icon asynchronously
+					const iconImage = await loadImage(iconPath);
 
 					return calculateDuration(defaultLocation, place.geometry.location, activeTransportButton)
 						.then((duration) => {
@@ -216,14 +249,20 @@ const Map: React.FC<MapProps> = ({
 								position: place.geometry?.location,
 								map: mapInstance.current,
 								icon: {
-									url: iconPath,
-									size: new google.maps.Size(25, 25),
+									url: (iconImage as HTMLImageElement).src,
+									size: new google.maps.Size(24, 24),
 								},
 								title: place.name,
 								visible: false,
 							});
 
 							nearbyMarkers.push({ marker: nearbyMarker, place, duration: durationNumber });
+
+							nearbyMarkersInfoGrab[type].push({
+								name: place.name,
+								duration: durationNumber,
+							});
+
 							return durationNumber;
 						})
 						.catch((error) => {
@@ -235,6 +274,8 @@ const Map: React.FC<MapProps> = ({
 			});
 			await Promise.all(durationPromises);
 		}
+
+		setInitCategoriesForMenulist(categoriesInit as never[]);
 
 		nearbyMarkersInstance.current = nearbyMarkers;
 
@@ -259,6 +300,21 @@ const Map: React.FC<MapProps> = ({
 				});
 			}
 		});
+
+		// filtered list of lists of markers for each category for menu component
+		const filteredMarkersInfoGrab: Record<string, MarkerInfo[]> = {};
+
+		Object.entries(nearbyMarkersInfoGrab).forEach(([category, categoryMarkers]) => {
+			const filteredMarkers = categoryMarkers.filter((marker) => {
+				return !isNaN(marker.duration) && marker.duration <= maxDuration;
+			});
+
+			filteredMarkersInfoGrab[category] = filteredMarkers;
+		});
+
+		console.log(filteredMarkersInfoGrab);
+
+		setMenuGrabberCategoriesList(filteredMarkersInfoGrab);
 
 		let minDuration = Infinity;
 		let minDurationIndex = -1;
@@ -455,6 +511,8 @@ const Map: React.FC<MapProps> = ({
 				clearDirections();
 				clearCirclesandNearbyMarkers();
 				clearPlaceDetails();
+				setMenuGrabberCategoriesList({});
+				setInitCategoriesForMenulist([]);
 
 				const draggedLocation = markerInstance.current?.getPosition();
 
@@ -470,6 +528,8 @@ const Map: React.FC<MapProps> = ({
 					clearCirclesandNearbyMarkers();
 					markerInstance.current?.setVisible(false);
 					clearPlaceDetails();
+					setMenuGrabberCategoriesList({});
+					setInitCategoriesForMenulist([]);
 				}
 			});
 
@@ -483,6 +543,8 @@ const Map: React.FC<MapProps> = ({
 				clearDirections();
 				clearCirclesandNearbyMarkers();
 				clearPlaceDetails();
+				setMenuGrabberCategoriesList({});
+				setInitCategoriesForMenulist([]);
 			});
 		}
 	};
@@ -502,6 +564,8 @@ const Map: React.FC<MapProps> = ({
 					clearDirections();
 					clearCirclesandNearbyMarkers();
 					clearPlaceDetails();
+					setMenuGrabberCategoriesList({});
+					setInitCategoriesForMenulist([]);
 				}
 			}
 		}
@@ -519,6 +583,8 @@ const Map: React.FC<MapProps> = ({
 				clearDirections();
 				clearCirclesandNearbyMarkers();
 				clearPlaceDetails();
+				setMenuGrabberCategoriesList({});
+				setInitCategoriesForMenulist([]);
 			}
 		}
 	}, [chosenCity]);
@@ -554,8 +620,3 @@ const Map: React.FC<MapProps> = ({
 };
 
 export default Map;
-
-//TODO:
-// 6. zmodyfikuj działanie znaczników i obszarów, jeżeli w obszarze zielonym nie ma żadnych znaczników, to powinny się
-// pojawić pozostałe znaczniki z obszaru czerwonego o ile takowe istnieja.
-// 11. ew. poprawić wyglad UI

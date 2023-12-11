@@ -16,6 +16,7 @@ function App() {
 	const [selectedLocation, setSelectedLocation] = useState<google.maps.LatLng | undefined>(undefined);
 	const [count, setCount] = useState(0);
 	const [categoriesTypes, setCategoriesTypes] = useState([]);
+	const [initCategoriesForMenuList, setInitCategoriesForMenulist] = useState([]);
 	const [showPlaceInfo, setShowPlaceInfo] = useState({
 		name: '',
 		formattedAddress: '',
@@ -24,6 +25,7 @@ function App() {
 	});
 	const [activeTransportButton, setActiveTransportButton] = useState('walk');
 	const [activeAreaButton, setActiveAreaButton] = useState('15');
+	const [menuGrabberCategoriesList, setMenuGrabberCategoriesList] = useState({});
 
 	return (
 		<div className='app'>
@@ -42,7 +44,10 @@ function App() {
 					<div className='dropdown'>
 						<DropDownCategoriesSearch setCategoriesTypes={setCategoriesTypes} />
 					</div>
-					<Menu />
+					<Menu
+						initCategoriesForMenuList={initCategoriesForMenuList}
+						menuGrabberCategoriesList={menuGrabberCategoriesList}
+					/>
 				</div>
 				<div className='map-container'>
 					<Map
@@ -51,8 +56,10 @@ function App() {
 						count={count}
 						setShowPlaceInfo={setShowPlaceInfo}
 						categoriesTypes={categoriesTypes}
+						setInitCategoriesForMenulist={setInitCategoriesForMenulist}
 						activeTransportButton={activeTransportButton}
 						activeAreaButton={activeAreaButton}
+						setMenuGrabberCategoriesList={setMenuGrabberCategoriesList}
 					/>
 					<div className='over_map_transport'>
 						<TransportationButton setActiveTransportButton={setActiveTransportButton} />

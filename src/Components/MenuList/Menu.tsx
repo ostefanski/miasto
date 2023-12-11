@@ -7,16 +7,34 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import MenuIcon from '@mui/icons-material/Menu';
 import './Menu.css';
+import { School, AttachMoney, LocalPolice, Atm } from '@mui/icons-material';
+
+const categoryList = [
+	{
+		text: 'university',
+		icon: <School />,
+	},
+	{
+		text: 'bank',
+		icon: <AttachMoney />,
+	},
+	{
+		text: 'police',
+		icon: <LocalPolice />,
+	},
+	{
+		text: 'atm',
+		icon: <Atm />,
+	},
+];
 
 type Anchor = 'right';
 
-function Menu() {
+function Menu({ initCategoriesForMenuList, menuGrabberCategoriesList }) {
 	const [state, setState] = React.useState({
 		right: false,
 	});
@@ -39,26 +57,30 @@ function Menu() {
 			onClick={toggleDrawer(anchor, false)}
 			onKeyDown={toggleDrawer(anchor, false)}
 		>
-			<List>
-				{['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-					<ListItem key={text} disablePadding>
-						<ListItemButton>
-							<ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-							<ListItemText primary={text} />
-						</ListItemButton>
-					</ListItem>
-				))}
-			</List>
+			<h3>Wyświetlone miejsca</h3>
 			<Divider />
 			<List>
-				{['All mail', 'Trash', 'Spam'].map((text, index) => (
-					<ListItem key={text} disablePadding>
-						<ListItemButton>
-							<ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-							<ListItemText primary={text} />
-						</ListItemButton>
-					</ListItem>
-				))}
+				{initCategoriesForMenuList.map((category) => {
+					const matchedCategory = categoryList.find((item) => item.text === category);
+					const categoryMarkers = menuGrabberCategoriesList[category] || [];
+					return (
+						<React.Fragment key={category}>
+							<ListItem disablePadding>
+								<ListItemButton>
+									{matchedCategory && <ListItemIcon>{matchedCategory.icon}</ListItemIcon>}
+									<ListItemText primary={category} />
+								</ListItemButton>
+							</ListItem>
+							{categoryMarkers &&
+								categoryMarkers.map((marker, index) => (
+									<ListItem key={index}>
+										<ListItemText primary={marker.name} secondary={`Duration: ${marker.duration} min`} />
+									</ListItem>
+								))}
+							<Divider />
+						</React.Fragment>
+					);
+				})}
 			</List>
 		</Box>
 	);
@@ -78,7 +100,7 @@ function Menu() {
 						anchor={anchor}
 						open={state[anchor]}
 						onClose={toggleDrawer(anchor, false)}
-						PaperProps={{ style: { width: 300 } }}
+						PaperProps={{ style: { width: 400 } }}
 					>
 						{list(anchor)}
 					</Drawer>
