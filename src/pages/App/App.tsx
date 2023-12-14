@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import './App.css';
 import DropDownButton from 'src/Components/Dropdown/DropDownButton';
 import Map from 'src/Components/Map/Map';
@@ -26,6 +26,19 @@ function App() {
 	const [activeTransportButton, setActiveTransportButton] = useState('walk');
 	const [activeAreaButton, setActiveAreaButton] = useState('15');
 	const [menuGrabberCategoriesList, setMenuGrabberCategoriesList] = useState({});
+	const [directionsMenu, setDirectionsMenu] = useState<
+		Record<
+			string,
+			{
+				direction: google.maps.DirectionsResult;
+				name: string;
+				distance: string;
+				duration: string;
+				formattedAddress: string;
+			}[]
+		>
+	>({});
+	const directionsRenderinstance = useRef<google.maps.DirectionsRenderer | null>(null);
 
 	return (
 		<div className='app'>
@@ -45,8 +58,11 @@ function App() {
 						<DropDownCategoriesSearch setCategoriesTypes={setCategoriesTypes} />
 					</div>
 					<Menu
+						setShowPlaceInfo={setShowPlaceInfo}
 						initCategoriesForMenuList={initCategoriesForMenuList}
 						menuGrabberCategoriesList={menuGrabberCategoriesList}
+						directionsRenderinstance={directionsRenderinstance}
+						directionsMenu={directionsMenu}
 					/>
 				</div>
 				<div className='map-container'>
@@ -60,6 +76,8 @@ function App() {
 						activeTransportButton={activeTransportButton}
 						activeAreaButton={activeAreaButton}
 						setMenuGrabberCategoriesList={setMenuGrabberCategoriesList}
+						directionsRenderinstance={directionsRenderinstance}
+						setDirectionsMenu={setDirectionsMenu}
 					/>
 					<div className='over_map_transport'>
 						<TransportationButton setActiveTransportButton={setActiveTransportButton} />

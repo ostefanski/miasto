@@ -1,4 +1,4 @@
-import { LegacyRef, SetStateAction, useEffect, useRef } from 'react';
+import { LegacyRef, MutableRefObject, SetStateAction, useEffect, useRef } from 'react';
 import './Map.css';
 import { initMap } from 'src/utils/GoogleApi';
 import icons from 'src/assets/icons';
@@ -12,6 +12,7 @@ type PlaceInfo = {
 
 type MarkerInfo = {
 	name: string | undefined;
+	place: google.maps.places.PlaceResult;
 	duration: number;
 };
 
@@ -25,6 +26,21 @@ type MapProps = {
 	activeTransportButton: string;
 	activeAreaButton: string;
 	setMenuGrabberCategoriesList: React.Dispatch<React.SetStateAction<Record<string, MarkerInfo[]>>>;
+	directionsRenderinstance: MutableRefObject<google.maps.DirectionsRenderer | null>;
+	setDirectionsMenu: React.Dispatch<
+		React.SetStateAction<
+			Record<
+				string,
+				{
+					direction: google.maps.DirectionsResult;
+					name: string;
+					distance: string;
+					duration: string;
+					formattedAddress: string;
+				}[]
+			>
+		>
+	>;
 };
 
 const Map: React.FC<MapProps> = ({
@@ -37,6 +53,8 @@ const Map: React.FC<MapProps> = ({
 	activeTransportButton,
 	activeAreaButton,
 	setMenuGrabberCategoriesList,
+	directionsRenderinstance,
+	setDirectionsMenu,
 }) => {
 	interface MarkerWithPlace {
 		marker: google.maps.Marker;
@@ -51,7 +69,7 @@ const Map: React.FC<MapProps> = ({
 	const greenCircleinstance = useRef<google.maps.Circle | null>(null);
 	const nearbyMarkersInstance = useRef<MarkerWithPlace[] | null>(null);
 	const previousMarkerInstancePosition = useRef<google.maps.LatLng | null | undefined>(null);
-	const directionsRenderinstance = useRef<google.maps.DirectionsRenderer | null>(null);
+	// const directionsRenderinstance = useRef<google.maps.DirectionsRenderer | null>(null);
 	const categoriesTypesInstance = useRef<never[] | null>(null);
 	const transportationModeInstance = useRef<string>();
 	const areaModeInstance = useRef<string>();
@@ -174,9 +192,40 @@ const Map: React.FC<MapProps> = ({
 			bank: [],
 			police: [],
 			atm: [],
+			bakery: [],
+			bar: [],
+			hair_care: [],
+			cafe: [],
+			church: [],
+			shopping_mall: [],
+			store: [],
+			doctor: [],
+			pharmacy: [],
+			gas_station: [],
+			gym: [],
+			hardware_store: [],
+			hospital: [],
+			laundry: [],
+			library: [],
+			meal_delivery: [],
+			movie_theater: [],
+			night_club: [],
+			park: [],
+			parking: [],
+			post_office: [],
+			restaurant: [],
+			school: [],
+			stadium: [],
+			supermarket: [],
+			transit_station: [],
+			veterinary_care: [],
+			lodging: [],
+			train_station: [],
+			home_goods_store: [],
 		};
 
 		const categoriesInit: string[] = []; // array for storing static categories for menu list
+
 		for (const type of types) {
 			let results;
 
@@ -260,6 +309,7 @@ const Map: React.FC<MapProps> = ({
 
 							nearbyMarkersInfoGrab[type].push({
 								name: place.name,
+								place,
 								duration: durationNumber,
 							});
 
@@ -316,13 +366,86 @@ const Map: React.FC<MapProps> = ({
 
 		setMenuGrabberCategoriesList(filteredMarkersInfoGrab);
 
+		// start of the logic for grabbing info about directions for each marker and info about markers
+		// to make them being displayed on the website from the menu component by click
+		const promises: Promise<{
+			category: string;
+			directions: {
+				direction: google.maps.DirectionsResult;
+				name: string;
+				distance: string;
+				duration: string;
+				formattedAddress: string; // Include formattedAddress in the response
+			}[];
+		}>[] = [];
+
+		Object.entries(filteredMarkersInfoGrab).forEach(([category, categoryMarkers]) => {
+			const categoryPromise = Promise.all(
+				categoryMarkers.map((marker) => {
+					const place = marker.place;
+
+					return CalculateDirectionsToDisplayByMenuComponent(
+						defaultLocation,
+						place.geometry?.location,
+						activeTransportButton,
+						service,
+						place.place_id
+					)
+						.then((result) => ({
+							direction: result.response as google.maps.DirectionsResult,
+							name: marker.name,
+							distance: result.distance,
+							duration: result.duration,
+							formattedAddress: result.formattedAddress,
+						}))
+						.catch((error) => {
+							console.error('Error calculating directions:', error);
+							return null;
+						});
+				})
+			).then((directions) => ({
+				category,
+				directions: directions.filter((direction) => direction !== null) as {
+					direction: google.maps.DirectionsResult;
+					name: string;
+					distance: string;
+					duration: string;
+					formattedAddress: string;
+				}[],
+			}));
+
+			promises.push(categoryPromise);
+		});
+
+		Promise.all(promises).then((categoryResponses) => {
+			const validResponses: Record<
+				string,
+				{
+					direction: google.maps.DirectionsResult;
+					name: string;
+					distance: string;
+					duration: string;
+					formattedAddress: string;
+				}[]
+			> = {};
+			categoryResponses.forEach(({ category, directions }) => {
+				validResponses[category] = directions;
+			});
+
+			setDirectionsMenu(validResponses);
+			console.log(validResponses);
+		});
+
+		// end of the logic for menu component
 		let minDuration = Infinity;
 		let minDurationIndex = -1;
 
 		nearbyMarkers.forEach((marker, index) => {
-			if (!isNaN(marker.duration) && marker.duration !== null && marker.duration < minDuration) {
-				minDuration = marker.duration;
-				minDurationIndex = index;
+			if (marker.duration <= maxDuration) {
+				if (!isNaN(marker.duration) && marker.duration !== null && marker.duration < minDuration) {
+					minDuration = marker.duration;
+					minDurationIndex = index;
+				}
 			}
 		});
 
@@ -391,7 +514,14 @@ const Map: React.FC<MapProps> = ({
 
 		directionsService.route(request, (response, status) => {
 			if (status === google.maps.DirectionsStatus.OK && directionsRenderinstance.current) {
-				mapInstance.current?.setZoom(15);
+				if (transportationModeInstance.current === 'bike' && areaModeInstance.current === '15') {
+					mapInstance.current?.setZoom(13);
+				} else if (transportationModeInstance.current === 'bike' && areaModeInstance.current === '30') {
+					mapInstance.current?.setZoom(12);
+				} else {
+					mapInstance.current?.setZoom(15);
+				}
+
 				directionsRenderinstance.current.setDirections(response);
 
 				const route = response?.routes[0];
@@ -409,6 +539,84 @@ const Map: React.FC<MapProps> = ({
 			} else {
 				console.error('Error while calculating directions', status);
 			}
+		});
+	};
+
+	const CalculateDirectionsToDisplayByMenuComponent = (
+		origin,
+		destination,
+		mode,
+		service,
+		placeId
+	): Promise<{
+		response: google.maps.DirectionsResult | null;
+		distance: string | undefined;
+		duration: string | undefined;
+		formattedAddress: string | undefined; // Include formatted_address in the return type
+	}> => {
+		const directionsService = new google.maps.DirectionsService();
+
+		const detailsRequest = {
+			placeId: placeId,
+			fields: ['formatted_address'],
+		};
+
+		return new Promise((resolve, reject) => {
+			service.getDetails(detailsRequest, (details, detailsStatus) => {
+				if (detailsStatus === google.maps.places.PlacesServiceStatus.OK && details) {
+					if (directionsRenderinstance.current === null) {
+						directionsRenderinstance.current = new google.maps.DirectionsRenderer({
+							preserveViewport: true,
+						});
+					}
+
+					directionsRenderinstance.current.setOptions({
+						suppressMarkers: true,
+						polylineOptions: {
+							zIndex: 50,
+							strokeColor: '#1976D2',
+							strokeWeight: 5,
+						},
+					});
+
+					directionsRenderinstance.current.setMap(mapInstance.current);
+
+					let request;
+
+					if (mode === 'walk') {
+						request = {
+							origin: origin,
+							destination: destination,
+							travelMode: google.maps.TravelMode.WALKING,
+						};
+					} else if (mode === 'bike') {
+						request = {
+							origin: origin,
+							destination: destination,
+							travelMode: google.maps.TravelMode.BICYCLING,
+						};
+					}
+
+					// Use DirectionsService to calculate directions
+					directionsService.route(request, (response, status) => {
+						if (status === google.maps.DirectionsStatus.OK && directionsRenderinstance.current) {
+							const route = response?.routes[0];
+
+							const distance = route?.legs[0].distance?.text;
+							const duration = route?.legs[0].duration?.text;
+
+							// Include formatted_address in the resolved object
+							resolve({ response, distance, duration, formattedAddress: details.formatted_address });
+						} else {
+							console.error('Error while calculating directions', status);
+							reject(new Error(`Error while calculating directions: ${status}`));
+						}
+					});
+				} else {
+					console.error('Error while getting place details', detailsStatus);
+					reject(new Error(`Error while getting place details: ${detailsStatus}`));
+				}
+			});
 		});
 	};
 

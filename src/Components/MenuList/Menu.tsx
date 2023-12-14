@@ -12,8 +12,40 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuIcon from '@mui/icons-material/Menu';
 import Collapse from '@mui/material/Collapse';
 import './Menu.css';
-import { School, AttachMoney, LocalPolice, Atm } from '@mui/icons-material';
-import { useState } from 'react';
+import {
+	School,
+	AttachMoney,
+	LocalPolice,
+	Atm,
+	BakeryDining,
+	LocalBar,
+	Carpenter,
+	LocalCafe,
+	Church,
+	LocalMall,
+	ShoppingCart,
+	AccountCircle,
+	LocalPharmacy,
+	LocalGasStation,
+	FitnessCenter,
+	Store,
+	LocalHospital,
+	LocalLaundryService,
+	LocalLibrary,
+	DeliveryDining,
+	Movie,
+	Nightlife,
+	Park,
+	LocalParking,
+	LocalPostOffice,
+	Restaurant,
+	Stadium,
+	LocalGroceryStore,
+	DirectionsBus,
+	Hotel,
+	DirectionsRailway,
+} from '@mui/icons-material';
+import { MutableRefObject, useState } from 'react';
 
 const categoryList = [
 	{
@@ -32,11 +64,196 @@ const categoryList = [
 		text: 'atm',
 		icon: <Atm />,
 	},
+	{
+		text: 'bakery',
+		icon: <BakeryDining />,
+	},
+
+	{
+		text: 'bar',
+		icon: <LocalBar />,
+	},
+
+	{
+		text: 'hair_care',
+		icon: <Carpenter />,
+	},
+
+	{
+		text: 'cafe',
+		icon: <LocalCafe />,
+	},
+
+	{
+		text: 'church',
+		icon: <Church />,
+	},
+
+	{
+		text: 'shopping_mall',
+		icon: <LocalMall />,
+	},
+
+	{
+		text: 'store',
+		icon: <ShoppingCart />,
+	},
+
+	{
+		text: 'doctor',
+		icon: <AccountCircle />,
+	},
+
+	{
+		text: 'pharmacy',
+		icon: <LocalPharmacy />,
+	},
+
+	{
+		text: 'gas_station',
+		icon: <LocalGasStation />,
+	},
+
+	{
+		text: 'gym',
+		icon: <FitnessCenter />,
+	},
+
+	{
+		text: 'hardware_store',
+		icon: <Store />,
+	},
+
+	{
+		text: 'hospital',
+		icon: <LocalHospital />,
+	},
+
+	{
+		text: 'laundry',
+		icon: <LocalLaundryService />,
+	},
+
+	{
+		text: 'library',
+		icon: <LocalLibrary />,
+	},
+
+	{
+		text: 'meal_delivery',
+		icon: <DeliveryDining />,
+	},
+
+	{
+		text: 'movie_theater',
+		icon: <Movie />,
+	},
+
+	{
+		text: 'night_club',
+		icon: <Nightlife />,
+	},
+
+	{
+		text: 'park',
+		icon: <Park />,
+	},
+
+	{
+		text: 'parking',
+		icon: <LocalParking />,
+	},
+
+	{
+		text: 'post_office',
+		icon: <LocalPostOffice />,
+	},
+
+	{
+		text: 'restaurant',
+		icon: <Restaurant />,
+	},
+
+	{
+		text: 'school',
+		icon: <School />,
+	},
+
+	{
+		text: 'stadium',
+		icon: <Stadium />,
+	},
+
+	{
+		text: 'supermarket',
+		icon: <LocalGroceryStore />,
+	},
+
+	{
+		text: 'transit_station',
+		icon: <DirectionsBus />,
+	},
+
+	{
+		text: 'veterinary_care',
+		icon: <LocalHospital />,
+	},
+
+	{
+		text: 'lodging',
+		icon: <Hotel />,
+	},
+
+	{
+		text: 'train_station',
+		icon: <DirectionsRailway />,
+	},
+
+	{
+		text: 'home_goods_store',
+		icon: <Store />,
+	},
 ];
 
 type Anchor = 'right';
 
-function Menu({ initCategoriesForMenuList, menuGrabberCategoriesList }) {
+type PlaceInfo = {
+	name: string;
+	formattedAddress: string;
+	duration: string;
+	distance: string;
+};
+
+type MarkerInfo = {
+	name: string | undefined;
+	place: google.maps.places.PlaceResult;
+	duration: number;
+};
+
+type MenuProps = {
+	initCategoriesForMenuList: string[];
+	menuGrabberCategoriesList: Record<string, MarkerInfo[]>;
+	directionsRenderinstance: MutableRefObject<google.maps.DirectionsRenderer | null>;
+	directionsMenu: Record<
+		string,
+		{
+			direction: google.maps.DirectionsResult;
+			name: string;
+			distance: string;
+			duration: string;
+			formattedAddress: string;
+		}[]
+	>;
+	setShowPlaceInfo: React.Dispatch<React.SetStateAction<PlaceInfo>>;
+};
+
+function Menu({
+	initCategoriesForMenuList,
+	menuGrabberCategoriesList,
+	directionsRenderinstance,
+	directionsMenu,
+	setShowPlaceInfo,
+}: MenuProps) {
 	const [state, setState] = useState({
 		right: false,
 	});
@@ -89,7 +306,7 @@ function Menu({ initCategoriesForMenuList, menuGrabberCategoriesList }) {
 									<ListItemText
 										primary={
 											<>
-												{category}
+												{category.charAt(0).toUpperCase() + category.slice(1)}
 												<span style={{ color: 'gray', marginLeft: '15px', fontSize: '14px' }}>
 													results: {categoryMarkers.length}
 												</span>
@@ -107,7 +324,27 @@ function Menu({ initCategoriesForMenuList, menuGrabberCategoriesList }) {
 												className='items'
 												primary={marker.name}
 												secondary={`duration: ${marker.duration} min`}
-												onClick={toggleDrawer(anchor, false)}
+												onClick={() => {
+													setState((prevState) => ({ ...prevState, right: false }));
+													const categoryDirections = directionsMenu[category];
+													const selectedDirection = categoryDirections.find(
+														(direction) => direction.name === marker.name
+													);
+
+													if (selectedDirection) {
+														setShowPlaceInfo((prevInfo) => ({
+															...prevInfo,
+															name: selectedDirection.name,
+															formattedAddress: selectedDirection.formattedAddress,
+															duration: selectedDirection.duration,
+															distance: selectedDirection.distance,
+														}));
+													}
+
+													if (selectedDirection) {
+														directionsRenderinstance.current?.setDirections(selectedDirection.direction);
+													}
+												}}
 											/>
 										</ListItem>
 									))}
