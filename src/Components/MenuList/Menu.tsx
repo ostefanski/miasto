@@ -293,7 +293,7 @@ function Menu({
 		>
 			<h3>Wyświetlone miejsca</h3>
 			<Divider />
-			<List>
+			<List className='list'>
 				{initCategoriesForMenuList.map((category) => {
 					const matchedCategory = categoryList.find((item) => item.text === category);
 					const categoryMarkers = menuGrabberCategoriesList[category] || [];
@@ -319,9 +319,9 @@ function Menu({
 								{/* Expandable content */}
 								<List component='div' disablePadding>
 									{sortedCategoryMarkers.map((marker, index) => (
-										<ListItem key={index}>
+										<ListItem className='items' key={index}>
 											<ListItemText
-												className='items'
+												className='items_text'
 												primary={marker.name}
 												secondary={`duration: ${marker.duration} min`}
 												onClick={() => {

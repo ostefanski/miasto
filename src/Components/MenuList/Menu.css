@@ -11,4 +11,13 @@ h3 {
 .items:hover {
 	background-color: #ffeecc;
 	cursor: pointer;
+	padding: 5px;
+}
+
+.items_text {
+	padding: 5px;
+}
+
+.list {
+	padding-top: 0 !important;
 }
