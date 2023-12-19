@@ -1,23 +1,73 @@
 .button {
-	position: absolute;
-	top: 20px;
-	right: 20px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.Menu {
+  width: 400px;
+}
+
+.header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin: 8px;
+}
+
+.back-button {
+  position: relative;
 }
 
 h3 {
-	text-align: center;
+  flex-grow: 1;
+  padding-right: 40px;
 }
 
 .items:hover {
-	background-color: #ffeecc;
-	cursor: pointer;
-	padding: 5px;
+  background-color: #ffeecc;
+  cursor: pointer;
+  padding: 5px;
 }
 
 .items_text {
-	padding: 5px;
+  padding: 5px;
 }
 
 .list {
-	padding-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+@media screen and (max-width: 1030px) {
+  .button {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin: auto;
+  }
+
+  .Menu {
+    width: 300px;
+    position: relative;
+  }
+
+  .back-button {
+    width: auto;
+    position: relative;
+    left: 0;
+  }
+
+  h3 {
+    position: relative;
+    padding-right: 0;
+  }
+
+  .help-mobile {
+    width: auto;
+    height: 50%;
+    position: relative;
+    right: 0;
+  }
 }

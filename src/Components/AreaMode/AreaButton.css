@@ -1,26 +1,39 @@
 .area-button {
-	background: rgb(255, 255, 255) padding-box;
-	display: flex;
-	flex-direction: row;
-	background-color: #fff;
-	/* border: 1px solid #ccc; */
-	margin: 20px 30px;
+  background: rgb(255, 255, 255) padding-box;
+  display: flex;
+  flex-direction: row;
+  background-color: #fff;
+  /* border: 1px solid #ccc; */
+  margin: 20px 30px;
 }
 
 .button-side-area {
-	display: flex;
-	justify-content: center;
-	padding: 10.5px;
-	cursor: pointer;
-	background: rgb(255, 255, 255) padding-box;
-	cursor: pointer;
-	user-select: none;
-	box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
-	width: 100px;
-	border: none;
-	font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 21px;
+  cursor: pointer;
+  background: rgb(255, 255, 255) padding-box;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+  width: 100px;
+  border: none;
+  font-weight: bold;
 }
 
 .button-side-area:hover {
-	background-color: #f0f0f0;
+  background-color: #f0f0f0;
+}
+
+@media screen and (max-width: 1030px) {
+  .area-button {
+    flex-direction: column;
+    margin: 10px 0;
+    right: 10px;
+  }
+  .button-side-area {
+    width: 100%;
+    padding: 11px;
+  }
 }

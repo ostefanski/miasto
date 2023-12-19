@@ -1,15 +1,21 @@
 .info {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
-	position: relative;
-	top: 200px;
-	text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: relative;
+  top: 200px;
+  text-align: center;
 }
 
 .info p {
-	max-width: 400px;
-	word-wrap: break-word;
-	margin: 10px 0;
+  max-width: 400px;
+  word-wrap: break-word;
+  margin: 10px 0;
+}
+
+@media screen and (max-width: 1030px) {
+  .info {
+    top: 100px;
+  }
 }
