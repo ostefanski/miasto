@@ -32,8 +32,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* width: 260px; */
   width: 75%;
+  max-width: 260px;
   transition: transform 0.2s;
   transform: translate(0, calc(var(--y, 0) * 1%));
   margin: 0 auto; /* previous state written by me */
@@ -143,6 +143,7 @@
 @media screen and (max-width: 1030px) {
   .dir-control {
     width: 25%; /* Full width for small screens */
+    max-width: 206px;
     display: flex;
     flex-direction: row;
     position: relative;
