@@ -1,0 +1,21 @@
+.dropdown {
+  width: 70%; /* was 400px */
+  user-select: none;
+  position: relative;
+  margin-top: 20px;
+  z-index: 10;
+}
+
+@media screen and (max-width: 1030px) {
+  .dropdown {
+    width: 100%;
+    height: auto;
+    display: flex;
+    user-select: none;
+    align-items: center;
+    position: relative;
+    margin-top: 0;
+    margin-bottom: 0;
+    z-index: 10;
+  }
+}

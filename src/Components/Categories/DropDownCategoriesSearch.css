@@ -1,0 +1,37 @@
+.dropdown {
+  width: 70%; /* was 400px */
+  user-select: none;
+  position: relative;
+  margin-top: 20px;
+  z-index: 10;
+}
+
+.dropdown .css-1h51icj-MuiAutocomplete-root .MuiAutocomplete-inputRoot {
+  flex-wrap: nowrap;
+  overflow: hidden; /* was auto */
+  height: auto;
+  width: 100%;
+}
+
+/* Wiekszosc tekstu oraz side-bar rozjezdza sie przy 1030px*/
+@media screen and (max-width: 1030px) {
+  .dropdown {
+    width: 100%;
+    height: auto;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-top: 0;
+    bottom: 0;
+    z-index: 10;
+  }
+
+  .dropdown-checkbox {
+    width: 15px;
+    height: 15px;
+  }
+
+  .dropdown-label {
+  }
+}
