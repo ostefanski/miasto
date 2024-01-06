@@ -22,6 +22,7 @@ type MarkerInfo = {
 };
 
 type MapProps = {
+	userPosition: google.maps.LatLngLiteral | undefined;
 	chosenCity: string;
 	setChosenCity: React.Dispatch<React.SetStateAction<string>>;
 	selectedLocation: google.maps.LatLng | undefined;
@@ -29,9 +30,11 @@ type MapProps = {
 	setShowPlaceInfo: React.Dispatch<React.SetStateAction<PlaceInfo>>;
 	categoriesTypes: never[];
 	setCategoriesTypes: React.Dispatch<SetStateAction<never[]>>;
-	setInitCategoriesForMenulist: React.Dispatch<SetStateAction<never[]>>;
+	setInitCategoriesForMenulist: React.Dispatch<React.SetStateAction<never[]>>;
 	activeTransportButton: string;
+	setActiveTransportButton: React.Dispatch<React.SetStateAction<string>>;
 	activeAreaButton: string;
+	setActiveAreaButton: React.Dispatch<React.SetStateAction<string>>;
 	setMenuGrabberCategoriesList: React.Dispatch<React.SetStateAction<Record<string, MarkerInfo[]>>>;
 	directionsRenderinstance: MutableRefObject<google.maps.DirectionsRenderer | null>;
 	setDirectionsMenu: React.Dispatch<
@@ -51,6 +54,7 @@ type MapProps = {
 };
 
 const Map: React.FC<MapProps> = ({
+	userPosition,
 	chosenCity,
 	setChosenCity,
 	selectedLocation,
@@ -60,7 +64,9 @@ const Map: React.FC<MapProps> = ({
 	setCategoriesTypes,
 	setInitCategoriesForMenulist,
 	activeTransportButton,
+	setActiveTransportButton,
 	activeAreaButton,
+	setActiveAreaButton,
 	setMenuGrabberCategoriesList,
 	directionsRenderinstance,
 	setDirectionsMenu,
@@ -78,7 +84,6 @@ const Map: React.FC<MapProps> = ({
 	const greenCircleinstance = useRef<google.maps.Circle | null>(null);
 	const nearbyMarkersInstance = useRef<MarkerWithPlace[] | null>(null);
 	const previousMarkerInstancePosition = useRef<google.maps.LatLng | null | undefined>(null);
-	// const directionsRenderinstance = useRef<google.maps.DirectionsRenderer | null>(null);
 	const categoriesTypesInstance = useRef<never[] | null>(null);
 	const transportationModeInstance = useRef<string>();
 	const areaModeInstance = useRef<string>();
@@ -92,7 +97,7 @@ const Map: React.FC<MapProps> = ({
 			case 'Sopot':
 				return { lat: 54.44162461954634, lng: 18.559612587679123 };
 			default:
-				return { lat: 54.39610635977299, lng: 18.57432100727402 };
+				return userPosition || { lat: 54.39610635977299, lng: 18.57432100727402 };
 		}
 	};
 
@@ -179,6 +184,19 @@ const Map: React.FC<MapProps> = ({
 		});
 	};
 
+	const parseDurationString = (durationString) => {
+		const hoursRegex = /(\d+)\s*godz/i;
+		const minutesRegex = /(\d+)\s*min/i;
+
+		const hoursMatch = durationString.match(hoursRegex);
+		const minutesMatch = durationString.match(minutesRegex);
+
+		const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
+		const minutes = minutesMatch ? parseInt(minutesMatch[1], 10) : 0;
+
+		return hours * 60 + minutes;
+	};
+
 	const findNearbyPlaces = async (defaultLocation) => {
 		const types: string[] = categoriesTypes;
 		categoriesTypesInstance.current = categoriesTypes;
@@ -243,7 +261,7 @@ const Map: React.FC<MapProps> = ({
 			if (activeTransportButton === 'walk') {
 				const requestWalk = {
 					location: defaultLocation,
-					radius: 2200, //2.2 km //PROBLEM ZMIENIĆ NA LISTE
+					radius: 2200, //2.2 km
 					types: [type],
 				};
 
@@ -301,7 +319,7 @@ const Map: React.FC<MapProps> = ({
 
 					return calculateDuration(defaultLocation, place.geometry.location, activeTransportButton)
 						.then((duration) => {
-							const durationNumber = parseFloat(duration as string);
+							const durationNumber = parseDurationString(duration as string);
 
 							const nearbyMarker = new google.maps.Marker({
 								position: place.geometry?.location,
@@ -700,7 +718,13 @@ const Map: React.FC<MapProps> = ({
 	};
 
 	const initMapWithMarker = async () => {
-		const position = getCityPosition(chosenCity);
+		let position;
+
+		if (!chosenCity && userPosition) {
+			position = userPosition;
+		} else {
+			position = getCityPosition(chosenCity);
+		}
 
 		const blueMarkerIcon = {
 			url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
@@ -788,7 +812,7 @@ const Map: React.FC<MapProps> = ({
 				}
 			}
 		}
-	}, [selectedLocation]);
+	}, [selectedLocation, userPosition]);
 
 	useEffect(() => {
 		if (mapInstance.current) {
@@ -841,7 +865,16 @@ const Map: React.FC<MapProps> = ({
 		clearPlaceDetails();
 		setChosenCity('');
 		setCategoriesTypes([]);
+		setActiveAreaButton('15');
+		setActiveTransportButton('walk');
 	}, [isMobile]);
+
+	useEffect(() => {
+		if (userPosition) {
+			mapInstance.current?.panTo(userPosition);
+			markerInstance.current?.setPosition(userPosition);
+		}
+	}, [userPosition]);
 
 	return <div ref={mapRef as LegacyRef<HTMLDivElement>} className='map'></div>;
 };

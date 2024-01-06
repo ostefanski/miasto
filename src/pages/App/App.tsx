@@ -11,10 +11,14 @@ import Help from 'src/Components/HelpCenter/Help';
 import AreaButton from 'src/Components/AreaMode/AreaButton';
 import Menu from 'src/Components/MenuList/Menu';
 import Logo from 'src/assets/LogoMiasto15_v2.svg';
+import Cookies from 'universal-cookie';
+
+const cookies = new Cookies();
 
 function App() {
 	const [chosenCity, setChosenCity] = useState('');
 	const [selectedLocation, setSelectedLocation] = useState<google.maps.LatLng | undefined>(undefined);
+	const [userPosition, setUserPosition] = useState<google.maps.LatLngLiteral>();
 	const [count, setCount] = useState(0);
 	const [categoriesTypes, setCategoriesTypes] = useState([]);
 	const [initCategoriesForMenuList, setInitCategoriesForMenulist] = useState([]);
@@ -53,6 +57,36 @@ function App() {
 
 	const isMobile = windowWidth <= 1030;
 
+	// for reading user geolocation
+	useEffect(() => {
+		// Check if the user's location is saved in the cookie
+		const storedUserLocation = cookies.get('userLocation');
+
+		if (storedUserLocation !== undefined) {
+			setUserPosition(storedUserLocation);
+		} else {
+			// Ask for the user's geolocation only if the cookie is not available
+			const getUserLocation = () => {
+				navigator.geolocation.getCurrentPosition(
+					(position) => {
+						const { latitude, longitude } = position.coords;
+
+						const location = { lat: latitude, lng: longitude };
+
+						setUserPosition(location);
+
+						cookies.set('userLocation', JSON.stringify(location), { path: '/', maxAge: 2592000 }); // maxAge is in seconds (30 days)
+					},
+					(error) => {
+						console.error('Error getting user location:', error.message);
+					}
+				);
+			};
+
+			getUserLocation();
+		}
+	}, []);
+
 	if (isMobile) {
 		return (
 			<div className='app'>
@@ -81,6 +115,7 @@ function App() {
 					</div>
 					<div className='map-container'>
 						<Map
+							userPosition={userPosition}
 							chosenCity={chosenCity}
 							setChosenCity={setChosenCity}
 							selectedLocation={selectedLocation}
@@ -94,6 +129,8 @@ function App() {
 							setMenuGrabberCategoriesList={setMenuGrabberCategoriesList}
 							directionsRenderinstance={directionsRenderinstance}
 							setDirectionsMenu={setDirectionsMenu}
+							setActiveTransportButton={setActiveTransportButton}
+							setActiveAreaButton={setActiveAreaButton}
 						/>
 						<div className='over_map_transport'>
 							<TransportationButton setActiveTransportButton={setActiveTransportButton} />
@@ -135,6 +172,9 @@ function App() {
 					</div>
 					<div className='map-container'>
 						<Map
+							userPosition={userPosition}
+							setActiveTransportButton={setActiveTransportButton}
+							setActiveAreaButton={setActiveAreaButton}
 							chosenCity={chosenCity}
 							setChosenCity={setChosenCity}
 							selectedLocation={selectedLocation}
