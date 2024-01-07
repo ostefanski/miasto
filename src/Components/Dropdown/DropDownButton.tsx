@@ -25,7 +25,7 @@ function Dropdown({ chosenCity, setChosenCity }) {
 	return (
 		<Box className='dropdown'>
 			<FormControl fullWidth>
-				<InputLabel id='dropdown-label'>Wybierz miasto</InputLabel>
+				<InputLabel id='dropdown-label'>Select City</InputLabel>
 				<Select
 					labelId='dropdown-label'
 					id='dropdown'

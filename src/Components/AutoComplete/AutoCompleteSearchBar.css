@@ -1,62 +1,75 @@
 .search-bar {
-  display: flex;
-  background-color: #fff;
-  border-radius: 20px;
-  padding: 5px;
-  height: 40px;
-  align-items: center;
+	display: flex;
+	background-color: #fff;
+	border-radius: 20px;
+	padding: 5px;
+	height: 40px;
+	align-items: center;
 }
 
 .search-input {
-  border: none;
-  outline: none;
-  background: transparent;
-  padding: 10px;
-  border-radius: 15px;
-  width: 220px;
+	border: none;
+	outline: none;
+	background: transparent;
+	padding: 10px;
+	border-radius: 15px;
+	width: 220px;
+	font-size: 15px;
 }
 
 .search-icon {
-  padding: 5px;
-  margin-right: 20px;
-  cursor: pointer;
+	padding: 5px;
+	margin-right: 20px;
+	cursor: pointer;
 }
 
 .pac-container {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  width: 268px !important;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	width: 268px !important;
 }
 
 .pac-item {
-  padding: 10px;
-  cursor: pointer;
+	padding: 10px;
+	cursor: pointer;
 }
 
 .pac-item:hover {
-  background-color: #f4f4f4;
+	background-color: #f4f4f4;
 }
 
 @media screen and (max-width: 1030px) {
-  /* Render normally on PC but when on mobile, render only SearchIcon and when being clicked extend it to SearchBar */
+	/* Render normally on PC but when on mobile, render only SearchIcon and when being clicked extend it to SearchBar */
 
-  .search-bar {
-    display: flex;
-    background-color: #fff;
-    border-radius: 20px;
-    padding: 5px;
-    height: 32px;
-    align-items: center;
-  }
+	.search-bar {
+		display: flex;
+		background-color: #fff;
+		border-radius: 20px;
+		padding: 5px;
+		height: 32px;
+		align-items: center;
+	}
 
-  .search-input {
-    width: 100%;
-  }
-  .search-icon {
-    margin-right: 16px;
-    margin: center;
-  }
-  .pac-container {
-    width: 100% !important;
-  }
+	.search-input {
+		width: 100%;
+		font-size: 13px;
+	}
+	.search-icon {
+		margin-right: -10px;
+		margin: center;
+	}
+	.pac-container {
+		width: 100% !important;
+	}
+}
+
+@media screen and (max-width: 1460px) {
+	.search-bar {
+		width: 200px;
+	}
+
+	.search-icon {
+		position: relative;
+		right: 30px;
+	}
 }

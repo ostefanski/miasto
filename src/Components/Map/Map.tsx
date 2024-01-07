@@ -51,6 +51,12 @@ type MapProps = {
 			>
 		>
 	>;
+	setNavigationLocationInfo: React.Dispatch<
+		React.SetStateAction<{
+			startLocation?: google.maps.LatLng;
+			endLocation?: google.maps.LatLng;
+		}>
+	>;
 };
 
 const Map: React.FC<MapProps> = ({
@@ -70,6 +76,7 @@ const Map: React.FC<MapProps> = ({
 	setMenuGrabberCategoriesList,
 	directionsRenderinstance,
 	setDirectionsMenu,
+	setNavigationLocationInfo,
 }) => {
 	interface MarkerWithPlace {
 		marker: google.maps.Marker;
@@ -374,6 +381,10 @@ const Map: React.FC<MapProps> = ({
 					clearDirections();
 					CalculateAndDisplayDirections(defaultLocation, place.geometry?.location, activeTransportButton);
 					fetchPlaceDetails(service, place.place_id ?? '');
+					setNavigationLocationInfo({
+						startLocation: defaultLocation,
+						endLocation: place.geometry?.location,
+					});
 				});
 			}
 		});
@@ -402,7 +413,9 @@ const Map: React.FC<MapProps> = ({
 				name: string;
 				distance: string;
 				duration: string;
-				formattedAddress: string; // Include formattedAddress in the response
+				formattedAddress: string;
+				startLocation?: google.maps.LatLng;
+				endLocation?: google.maps.LatLng;
 			}[];
 		}>[] = [];
 
@@ -424,6 +437,8 @@ const Map: React.FC<MapProps> = ({
 							distance: result.distance,
 							duration: result.duration,
 							formattedAddress: result.formattedAddress,
+							startLocation: defaultLocation,
+							endLocation: place.geometry?.location,
 						}))
 						.catch((error) => {
 							console.error('Error calculating directions:', error);
@@ -438,6 +453,8 @@ const Map: React.FC<MapProps> = ({
 					distance: string;
 					duration: string;
 					formattedAddress: string;
+					startLocation?: google.maps.LatLng;
+					endLocation?: google.maps.LatLng;
 				}[],
 			}));
 
@@ -453,6 +470,8 @@ const Map: React.FC<MapProps> = ({
 					distance: string;
 					duration: string;
 					formattedAddress: string;
+					startLocation?: google.maps.LatLng;
+					endLocation?: google.maps.LatLng;
 				}[]
 			> = {};
 			categoryResponses.forEach(({ category, directions }) => {
@@ -482,6 +501,10 @@ const Map: React.FC<MapProps> = ({
 			const nearestPlace = nearbyMarkers[minDurationIndex].place;
 			CalculateAndDisplayDirections(defaultLocation, nearestPlace.geometry?.location, activeTransportButton);
 			fetchPlaceDetails(service, nearestPlace.place_id ?? '');
+			setNavigationLocationInfo({
+				startLocation: defaultLocation,
+				endLocation: nearestPlace.geometry?.location,
+			});
 		}
 	};
 
@@ -581,7 +604,7 @@ const Map: React.FC<MapProps> = ({
 		response: google.maps.DirectionsResult | null;
 		distance: string | undefined;
 		duration: string | undefined;
-		formattedAddress: string | undefined; // Include formatted_address in the return type
+		formattedAddress: string | undefined;
 	}> => {
 		const directionsService = new google.maps.DirectionsService();
 
@@ -688,7 +711,6 @@ const Map: React.FC<MapProps> = ({
 		if (directionsRenderinstance.current !== null) {
 			console.log('cleared');
 			directionsRenderinstance.current.setMap(null); // detach directions from the map
-			// directionsRenderinstance.current.setDirections(null); // Clear the directions by setting it to null
 		}
 	};
 
@@ -756,6 +778,7 @@ const Map: React.FC<MapProps> = ({
 				clearPlaceDetails();
 				setMenuGrabberCategoriesList({});
 				setInitCategoriesForMenulist([]);
+				setNavigationLocationInfo({});
 
 				const draggedLocation = markerInstance.current?.getPosition();
 
@@ -773,6 +796,7 @@ const Map: React.FC<MapProps> = ({
 					clearPlaceDetails();
 					setMenuGrabberCategoriesList({});
 					setInitCategoriesForMenulist([]);
+					setNavigationLocationInfo({});
 				}
 			});
 
@@ -788,6 +812,7 @@ const Map: React.FC<MapProps> = ({
 				clearPlaceDetails();
 				setMenuGrabberCategoriesList({});
 				setInitCategoriesForMenulist([]);
+				setNavigationLocationInfo({});
 			});
 		}
 	};
@@ -809,6 +834,7 @@ const Map: React.FC<MapProps> = ({
 					clearPlaceDetails();
 					setMenuGrabberCategoriesList({});
 					setInitCategoriesForMenulist([]);
+					setNavigationLocationInfo({});
 				}
 			}
 		}
@@ -828,6 +854,7 @@ const Map: React.FC<MapProps> = ({
 				clearPlaceDetails();
 				setMenuGrabberCategoriesList({});
 				setInitCategoriesForMenulist([]);
+				setNavigationLocationInfo({});
 			}
 		}
 	}, [chosenCity]);
@@ -867,6 +894,7 @@ const Map: React.FC<MapProps> = ({
 		setCategoriesTypes([]);
 		setActiveAreaButton('15');
 		setActiveTransportButton('walk');
+		setNavigationLocationInfo({});
 	}, [isMobile]);
 
 	useEffect(() => {

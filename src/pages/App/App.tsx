@@ -12,6 +12,7 @@ import AreaButton from 'src/Components/AreaMode/AreaButton';
 import Menu from 'src/Components/MenuList/Menu';
 import Logo from 'src/assets/LogoMiasto15_v2.svg';
 import Cookies from 'universal-cookie';
+import NavigationButton from 'src/Components/Navigation/NavigationButton';
 
 const cookies = new Cookies();
 
@@ -44,6 +45,10 @@ function App() {
 		>
 	>({});
 	const directionsRenderinstance = useRef<google.maps.DirectionsRenderer | null>(null);
+	const [navigationLocationInfo, setNavigationLocationInfo] = useState<{
+		startLocation?: google.maps.LatLng;
+		endLocation?: google.maps.LatLng;
+	}>({});
 
 	const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -94,7 +99,7 @@ function App() {
 					<div className='logo'>
 						<img src={Logo} alt='Logo' className='logo-sailor' />
 					</div>
-					<AutoCompleteSearchBar placeholder='Podaj dokładny adres ...' setSelectedLocation={setSelectedLocation} />
+					<AutoCompleteSearchBar placeholder='Search address ...' setSelectedLocation={setSelectedLocation} />
 					<SearchNearbyButton setCount={setCount} />
 					<Menu
 						setShowPlaceInfo={setShowPlaceInfo}
@@ -102,6 +107,7 @@ function App() {
 						menuGrabberCategoriesList={menuGrabberCategoriesList}
 						directionsRenderinstance={directionsRenderinstance}
 						directionsMenu={directionsMenu}
+						setNavigationLocationInfo={setNavigationLocationInfo}
 					/>
 				</div>
 				<div className='main-container'>
@@ -131,12 +137,21 @@ function App() {
 							setDirectionsMenu={setDirectionsMenu}
 							setActiveTransportButton={setActiveTransportButton}
 							setActiveAreaButton={setActiveAreaButton}
+							setNavigationLocationInfo={setNavigationLocationInfo}
 						/>
 						<div className='over_map_transport'>
 							<TransportationButton setActiveTransportButton={setActiveTransportButton} />
 						</div>
 						<div className='over_map_area'>
 							<AreaButton setActiveAreaButton={setActiveAreaButton} />
+						</div>
+						<div className='over_map_navigation'>
+							{navigationLocationInfo.startLocation && navigationLocationInfo.endLocation && (
+								<NavigationButton
+									navigationLocationInfo={navigationLocationInfo}
+									activeTransportButton={activeTransportButton}
+								/>
+							)}
 						</div>
 					</div>
 				</div>
@@ -147,9 +162,15 @@ function App() {
 			<div className='app'>
 				<div className='side-bar'>
 					<h1>15-Minute City</h1>
-					<AutoCompleteSearchBar placeholder='Podaj dokładny adres' setSelectedLocation={setSelectedLocation} />
+					<AutoCompleteSearchBar placeholder='Search address ...' setSelectedLocation={setSelectedLocation} />
 					<SearchNearbyButton setCount={setCount} />
 					<ShowPlaceDetails showPlaceInfo={showPlaceInfo} />
+					{navigationLocationInfo.startLocation && navigationLocationInfo.endLocation && (
+						<NavigationButton
+							navigationLocationInfo={navigationLocationInfo}
+							activeTransportButton={activeTransportButton}
+						/>
+					)}
 				</div>
 				<div className='main-container'>
 					<Help />
@@ -167,6 +188,7 @@ function App() {
 								menuGrabberCategoriesList={menuGrabberCategoriesList}
 								directionsRenderinstance={directionsRenderinstance}
 								directionsMenu={directionsMenu}
+								setNavigationLocationInfo={setNavigationLocationInfo}
 							/>
 						</div>
 					</div>
@@ -188,6 +210,7 @@ function App() {
 							setMenuGrabberCategoriesList={setMenuGrabberCategoriesList}
 							directionsRenderinstance={directionsRenderinstance}
 							setDirectionsMenu={setDirectionsMenu}
+							setNavigationLocationInfo={setNavigationLocationInfo}
 						/>
 						<div className='over_map_transport'>
 							<TransportationButton setActiveTransportButton={setActiveTransportButton} />

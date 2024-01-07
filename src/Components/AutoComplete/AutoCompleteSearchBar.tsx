@@ -6,7 +6,7 @@ import { initAutocompleteService } from 'src/utils/GoogleApi';
 
 function AutoCompleteSearchBar({ placeholder, setSelectedLocation }) {
 	const [searchText, setSearchText] = useState('');
-	const inputElement = useRef<HTMLInputElement | null>(null); // Add type for inputElement
+	const inputElement = useRef<HTMLInputElement | null>(null);
 
 	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const inputValue = event.target.value;

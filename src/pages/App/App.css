@@ -1,185 +1,197 @@
 .app {
-  display: flex;
-  width: 100%;
-  height: 100vh;
+	display: flex;
+	width: 100%;
+	height: 100vh;
 }
 
 .side-bar {
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-  background-color: #14161a;
-  height: 100vh;
-  width: 22%;
-  color: #fff;
+	display: flex;
+	flex-flow: column;
+	align-items: center;
+	background-color: #14161a;
+	height: 100vh;
+	width: 22%;
+	color: #fff;
+}
+
+.side-bar h1 {
+	white-space: nowrap;
 }
 
 .dropdowns {
-  width: 80%;
-  display: flex;
-  justify-content: center;
-  flex-flow: row;
-  align-items: center;
+	width: 80%;
+	display: flex;
+	justify-content: center;
+	flex-flow: row;
+	align-items: center;
 }
 
 .dropdown {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .dropdown:nth-of-type(odd) {
-  justify-content: flex-end;
-  margin-right: 20px;
+	justify-content: flex-end;
+	margin-right: 20px;
 }
 
 .dropdown:nth-of-type(even) {
-  justify-content: flex-start;
-  margin-left: 20px;
+	justify-content: flex-start;
+	margin-left: 20px;
 }
 
 .main-container {
-  display: flex;
-  position: relative; /* for displaying help center button in left corner */
-  justify-content: flex-start;
-  flex-flow: column nowrap;
-  align-items: center;
-  gap: 5%;
-  width: 100%;
-  height: 100%;
+	display: flex;
+	position: relative; /* for displaying help center button in left corner */
+	justify-content: flex-start;
+	flex-flow: column nowrap;
+	align-items: center;
+	gap: 5%;
+	width: 100%;
+	height: 100%;
 }
 
 .map-container {
-  display: flex;
-  position: relative; /* for displaying Transport mode button in left corner of map */
-  flex-grow: 1;
-  margin-bottom: 40px;
-  width: 100%;
-  justify-content: flex-start;
-  flex-flow: column nowrap;
-  align-items: center;
+	display: flex;
+	position: relative; /* for displaying Transport mode button in left corner of map */
+	flex-grow: 1;
+	margin-bottom: 40px;
+	width: 100%;
+	justify-content: flex-start;
+	flex-flow: column nowrap;
+	align-items: center;
 }
 
 .over_map_transport {
-  position: absolute;
-  height: 0px; /* without this can't drag the map below the button */
-  top: 0;
-  bottom: 0;
-  left: 10%; /* Adjusted to 10% to match 80% width of the map-container so it is correct with the 80% width of map */
-  z-index: 1;
+	position: absolute;
+	height: 0px; /* without this can't drag the map below the button */
+	top: 0;
+	bottom: 0;
+	left: 10%; /* Adjusted to 10% to match 80% width of the map-container so it is correct with the 80% width of map */
+	z-index: 1;
 }
 
 .place-details {
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  gap: 5%;
-  margin-top: 20px;
-  margin-bottom: 20px;
+	display: flex;
+	flex-flow: column nowrap;
+	justify-content: flex-start;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	gap: 5%;
+	margin-top: 20px;
+	margin-bottom: 20px;
 }
 
 .over_map_area {
-  position: absolute;
-  height: 0px; /* without this can't drag the map below the button */
-  top: 0;
-  bottom: 0;
-  right: 10%; /* Adjusted to 10% to match 80% width of the map-container so it is correct with the 80% width of map */
-  z-index: 1;
-  display: flex;
-  flex-direction: row;
+	position: absolute;
+	height: 0px; /* without this can't drag the map below the button */
+	top: 0;
+	bottom: 0;
+	right: 10%; /* Adjusted to 10% to match 80% width of the map-container so it is correct with the 80% width of map */
+	z-index: 1;
+	display: flex;
+	flex-direction: row;
+}
+
+.over_map_navigation {
+	position: absolute;
+	height: 0px; /* without this can't drag the map below the button */
+	z-index: 1;
+	display: flex;
+	top: 50%;
 }
 
 @media screen and (max-width: 1030px) {
-  .app {
-    flex-flow: column;
-  }
+	.app {
+		flex-flow: column;
+	}
 
-  .logo-sailor {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-flow: row;
-    height: 40px;
-    width: 40px;
-    margin-right: 8px;
-    margin-left: 8px;
-    margin-top: 8px;
-    margin-bottom: 8px;
-  }
+	.logo-sailor {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-flow: row;
+		height: 40px;
+		width: 40px;
+		margin-right: 8px;
+		margin-left: 8px;
+		margin-top: 8px;
+		margin-bottom: 8px;
+	}
 
-  .title,
-  h1 {
-    font-size: 1.5rem;
-    display: relative;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    white-space: nowrap;
-    margin: 10px;
-  }
+	.title,
+	h1 {
+		font-size: 1.5rem;
+		display: relative;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		white-space: nowrap;
+		margin: 10px;
+	}
 
-  .side-bar {
-    width: 100%;
-    height: auto;
-    flex-flow: row;
-    justify-content: center;
-    align-items: center;
-  }
+	.side-bar {
+		width: 100%;
+		height: auto;
+		flex-flow: row;
+		justify-content: center;
+		align-items: center;
+	}
 
-  .main-container {
-    width: 100%;
-    gap: 0;
-    bottom: 0;
-    flex-flow: column;
-    justify-content: flex-start;
-    align-items: row;
-  }
+	.main-container {
+		width: 100%;
+		gap: 0;
+		bottom: 0;
+		flex-flow: column;
+		justify-content: flex-start;
+		align-items: row;
+	}
 
-  .map-container {
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: column;
-    margin-bottom: 0;
-    margin-top: 0;
-  }
+	.map-container {
+		flex-flow: column nowrap;
+		justify-content: flex-start;
+		align-items: column;
+		margin-bottom: 0;
+		margin-top: 0;
+	}
 
-  .dropdowns {
-    display: flex;
-    flex-flow: row;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    margin-top: 16px;
-    margin-bottom: 16px;
-  }
+	.dropdowns {
+		display: flex;
+		flex-flow: row;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		margin-top: 16px;
+		margin-bottom: 16px;
+	}
 
-  .dropdown:nth-of-type(odd) {
-    justify-content: flex-end;
-    margin-left: 15px;
-  }
+	.dropdown:nth-of-type(odd) {
+		justify-content: flex-end;
+		margin-left: 15px;
+	}
 
-  .dropdown:nth-of-type(even) {
-    justify-content: flex-start;
-    margin-right: 10px;
-  }
+	.dropdown:nth-of-type(even) {
+		justify-content: flex-start;
+		margin-right: 10px;
+	}
 
-  .over_map_transport {
-    left: 8px;
-  }
+	.over_map_transport {
+		left: 8px;
+	}
 
-  .over_map_area {
-    position: absolute;
-    flex-direction: column;
-    align-items: center;
-    height: 0;
-    width: auto;
-    right: 8px;
-  }
+	.over_map_area {
+		position: absolute;
+		flex-direction: column;
+		align-items: center;
+		height: 0;
+		width: auto;
+		right: 8px;
+	}
 
-  .menu {
-    position: relative;
-  }
+	.menu {
+		position: relative;
+	}
 }
