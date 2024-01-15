@@ -28,11 +28,17 @@ function App() {
     duration: "",
     distance: "",
   });
+  // @@ "walk" mógłby być wartościością enuma
   const [activeTransportButton, setActiveTransportButton] = useState("walk");
+  // @@ 15 to magic number, mógłby być zapisany w jakiejś zmiennej
   const [activeAreaButton, setActiveAreaButton] = useState("15");
+
+  // @@ można by stworzyć interfejs dla użytego tutaj typu
   const [menuGrabberCategoriesList, setMenuGrabberCategoriesList] = useState(
     {}
   );
+
+  // @@ użyty tu interfejs można by wydzielić reużywać w różnych miejscach
   const [directionsMenu, setDirectionsMenu] = useState<
     Record<
       string,
@@ -48,6 +54,9 @@ function App() {
   const directionsRenderinstance =
     useRef<google.maps.DirectionsRenderer | null>(null);
 
+
+  // @@ tę całą sekcję z windowWidth aż do const isMobile można by było wynieść z tego komponentu i zapakować do własnego hooka,
+  // który będzie tu użyty, dzięki czemu zmniejszy się poziom skomplikowania funkcji. Hook mógłby po prostu zwracać booleana isMobile
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
@@ -68,6 +77,7 @@ function App() {
             <img src={Logo} alt="Logo" className="logo-sailor" />
           </div>
           <AutoCompleteSearchBar
+              // @@ polecam spróbować dodać react-intl, dzięki czemu apka będzie mogła być wielojęzyczna
             placeholder="Podaj dokładny adres ..."
             setSelectedLocation={setSelectedLocation}
           />
@@ -185,4 +195,8 @@ function App() {
   }
 }
 
+// @@ w "nowym" front-endzie przeważają imienne exporty nad export default.
+// czyli: export function App... itd.
+// nawet jeśli jest tylko jeden export w pliku
+// IDE sobie lepiej z tym radzi. export default ma sens głównie wtedy, gdy chcemy robić lazy loading poszczególnych fragmentów aplikacji.
 export default App;

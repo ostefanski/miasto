@@ -56,6 +56,8 @@ const Map: React.FC<MapProps> = ({
 	directionsRenderinstance,
 	setDirectionsMenu,
 }) => {
+
+	// @@ interfejsy lepiej umieścić poza komponentem
 	interface MarkerWithPlace {
 		marker: google.maps.Marker;
 		place: google.maps.places.PlaceResult;
