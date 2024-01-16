@@ -29,12 +29,14 @@ function Help() {
     setOpen(false);
   };
 
+  // @@ można by użyć tej samej logiki/hooka dla isMobile, która jest już użyta gdzie indziej.
   let isMobile = false;
   if (window.innerWidth <= 1030) {
     isMobile = true;
   }
 
   return (
+      // @@ zamiast <React.Fragment> można po prostu napisać <>
     <React.Fragment>
       <div className="image" onClick={handleClickOpen}>
         <Tooltip title="Pomoc">

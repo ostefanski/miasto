@@ -56,6 +56,8 @@ const Map: React.FC<MapProps> = ({
 	directionsRenderinstance,
 	setDirectionsMenu,
 }) => {
+
+	// @@ interfejsy lepiej umieścić poza komponentem
 	interface MarkerWithPlace {
 		marker: google.maps.Marker;
 		place: google.maps.places.PlaceResult;
@@ -95,6 +97,7 @@ const Map: React.FC<MapProps> = ({
 
 		if (defaultLocation && circleName === 'greenwalk') {
 			greenCircleinstance.current = new google.maps.Circle({
+				// @@ wszystkie kolory mogłyby być importowane z jednego pliku, dzięki czemu stworzymy spójną paletę i łatwiej będzie w przypadku zmian
 				strokeColor: '#8BC34A',
 				strokeOpacity: 0.5,
 				strokeWeight: 2,

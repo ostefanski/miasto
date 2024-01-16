@@ -5,6 +5,8 @@ function AreaButton({ setActiveAreaButton }) {
 	const [activeButton, setActiveButton] = useState('15');
 
 	const handleButtonClick = (buttonType: string) => () => {
+		// @@ z finalnej wersji aplikacji (tej przeznaczonej dla użytkownika) zazwyczaj usuwa się console.logi, jako że user może je podejrzeć
+		// i dowiedzieć się rzeczy, które czasem niekoniecznie chcielibyśmy, żeby wiedział
 		console.log(`${buttonType} clicked`);
 		setActiveButton(buttonType);
 		setActiveAreaButton(buttonType);

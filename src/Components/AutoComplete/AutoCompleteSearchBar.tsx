@@ -4,6 +4,7 @@ import SearchIcon from 'src/assets/search.svg';
 import ClearIcon from 'src/assets/clear.svg';
 import { initAutocompleteService } from 'src/utils/GoogleApi';
 
+// @@ brakuje typów dla komponentów
 function AutoCompleteSearchBar({ placeholder, setSelectedLocation }) {
 	const [searchText, setSearchText] = useState('');
 	const inputElement = useRef<HTMLInputElement | null>(null); // Add type for inputElement
