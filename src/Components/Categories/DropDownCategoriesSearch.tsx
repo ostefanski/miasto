@@ -53,6 +53,7 @@ function DropDownCategoriesSearch({ setCategoriesTypes }) {
     setCategoriesTypes(selectedValues);
   };
 
+  // @@ isMobile - jak pisałem w innych miejsach, fajnie byłoby na to użyć jednego wspólnego rozwiązania
   const isMobile = window.innerWidth <= 1030;
 
   return (
