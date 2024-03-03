@@ -57,6 +57,7 @@ type MapProps = {
 			endLocation?: google.maps.LatLng;
 		}>
 	>;
+	setViewMarkersLocations: React.Dispatch<React.SetStateAction<google.maps.LatLng[] | undefined>>;
 };
 
 const Map: React.FC<MapProps> = ({
@@ -77,11 +78,13 @@ const Map: React.FC<MapProps> = ({
 	directionsRenderinstance,
 	setDirectionsMenu,
 	setNavigationLocationInfo,
+	setViewMarkersLocations,
 }) => {
 	interface MarkerWithPlace {
 		marker: google.maps.Marker;
 		place: google.maps.places.PlaceResult;
 		duration: number;
+		originalIcon: string;
 	}
 
 	const mapRef = useRef<HTMLElement | null>(null);
@@ -339,7 +342,12 @@ const Map: React.FC<MapProps> = ({
 								visible: false,
 							});
 
-							nearbyMarkers.push({ marker: nearbyMarker, place, duration: durationNumber });
+							nearbyMarkers.push({
+								marker: nearbyMarker,
+								place,
+								duration: durationNumber,
+								originalIcon: (iconImage as HTMLImageElement).src,
+							});
 
 							nearbyMarkersInfoGrab[type].push({
 								name: place.name,
@@ -372,6 +380,10 @@ const Map: React.FC<MapProps> = ({
 			activeAreaButton === '15' ? `green${activeTransportButton}` : `red${activeTransportButton}`
 		);
 
+		// Array to store saved markers, for caching map view with saved markers
+		const savedMarkers: MarkerWithPlace[] = [];
+		const savedMarkerLocations: google.maps.LatLng[] = [];
+
 		nearbyMarkers.forEach((marker) => {
 			if (!isNaN(marker.duration) && marker.duration <= maxDuration) {
 				marker.marker.setVisible(true);
@@ -386,8 +398,26 @@ const Map: React.FC<MapProps> = ({
 						endLocation: place.geometry?.location,
 					});
 				});
+
+				google.maps.event.addListener(marker.marker, 'rightclick', () => {
+					const index = savedMarkers.indexOf(marker);
+
+					if (index !== -1) {
+						// The marker is saved, so remove it from the saved markers and change its icon back to the original
+						savedMarkers.splice(index, 1);
+						marker.marker.setIcon(marker.originalIcon);
+						savedMarkerLocations.splice(index, 1);
+					} else {
+						// The marker is not saved, so add it to the saved markers and change its icon
+						marker.marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+						savedMarkers.push(marker);
+						savedMarkerLocations.push(marker.marker.getPosition() as google.maps.LatLng);
+					}
+				});
 			}
 		});
+
+		setViewMarkersLocations(savedMarkerLocations);
 
 		// filtered list of lists of markers for each category for menu component
 		const filteredMarkersInfoGrab: Record<string, MarkerInfo[]> = {};

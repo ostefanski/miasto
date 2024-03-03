@@ -1,0 +1,14 @@
+.views-bt {
+	position: absolute;
+	top: 80px;
+	right: 20px;
+}
+
+.header-views {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	margin: 8px;
+}

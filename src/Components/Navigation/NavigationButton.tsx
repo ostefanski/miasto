@@ -25,9 +25,19 @@ function NavigationButton({ navigationLocationInfo, activeTransportButton }: Nav
 
 			const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
 				`${startLatitude},${startLongitude}`
-			)}&destination=${encodeURIComponent(`${endLatitude},${endLongitude}`)}&travelmode=${travelMode}`;
+			)}&destination=${encodeURIComponent(
+				`${endLatitude},${endLongitude}`
+			)}&travelmode=${travelMode}&dir_action=navigate`;
 
-			window.open(googleMapsUrl, '_blank');
+			const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+			if (isMobile) {
+				// Open in Google Maps app
+				window.location.href = `comgooglemaps://?saddr=${startLatitude},${startLongitude}&daddr=${endLatitude},${endLongitude}&directionsmode=${travelMode}`;
+			} else {
+				// Open in browser
+				window.open(googleMapsUrl, '_blank');
+			}
 		}
 	};
 
