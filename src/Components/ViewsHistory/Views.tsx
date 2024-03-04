@@ -18,7 +18,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Checkbox from '@mui/material/Checkbox';
 
 type Anchor = 'right';
 
@@ -36,9 +37,10 @@ function Views({ viewMarkersLocations, setSavedViewsInfo }) {
 
 	const navigate = useNavigate();
 
-	const [savedViews, setSavedViews] = React.useState<SavedView[]>([]);
-	const [isDialogOpen, setDialogOpen] = React.useState<boolean>(false);
-	const [newViewName, setNewViewName] = React.useState<string>('');
+	const [savedViews, setSavedViews] = useState<SavedView[]>([]);
+	const [isDialogOpen, setDialogOpen] = useState<boolean>(false);
+	const [newViewName, setNewViewName] = useState<string>('');
+	const [selectedViews, setSelectedViews] = useState<number[]>([]);
 
 	useEffect(() => {
 		// Retrieve saved views from local storage on component mount
@@ -48,10 +50,15 @@ function Views({ viewMarkersLocations, setSavedViewsInfo }) {
 		}
 	}, []);
 
-	const handleViewClick = (clickedView: SavedView) => {
-		console.log('Clicked View:', clickedView);
-		setSavedViewsInfo(clickedView); // keep a track of currently saved view markers locations
-		navigate('/Views');
+	const handleViewClick = (clickedView: SavedView, event: React.MouseEvent) => {
+		// Check if the click event target is the checkbox
+		const isCheckboxClicked = (event.target as HTMLElement).tagName === 'INPUT';
+
+		if (!isCheckboxClicked) {
+			console.log('Clicked View:', clickedView);
+			setSavedViewsInfo(clickedView); // keep a track of currently saved view markers locations
+			navigate('/Views');
+		}
 	};
 
 	const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -101,6 +108,23 @@ function Views({ viewMarkersLocations, setSavedViewsInfo }) {
 		setNewViewName(event.target.value);
 	};
 
+	const handleCheckboxChange = (index: number) => {
+		const isSelected = selectedViews.includes(index);
+		if (isSelected) {
+			setSelectedViews((prev) => prev.filter((item) => item !== index));
+		} else {
+			setSelectedViews((prev) => [...prev, index]);
+		}
+	};
+
+	const handleDeleteViews = () => {
+		// Delete selected views from local storage and update state
+		const updatedViews = savedViews.filter((_, index) => !selectedViews.includes(index));
+		localStorage.setItem(VIEWS_STORAGE_KEY, JSON.stringify(updatedViews));
+		setSavedViews(updatedViews);
+		setSelectedViews([]);
+	};
+
 	const list = (anchor: Anchor) => (
 		<Box
 			className='Views'
@@ -117,17 +141,45 @@ function Views({ viewMarkersLocations, setSavedViewsInfo }) {
 			<List style={{ flexGrow: 1, overflowY: 'auto' }}>
 				{savedViews.map((view, index) => (
 					<ListItem key={index} disablePadding>
-						<ListItemButton onClick={() => handleViewClick(view)}>
-							<ListItemText primary={view.name} />
+						<ListItemButton onClick={(event) => handleViewClick(view, event)}>
+							<ListItemText
+								primary={
+									<React.Fragment>
+										<span style={{ color: '#90caf9', fontSize: '18px' }}>Name:</span> {view.name}
+									</React.Fragment>
+								}
+								secondary={
+									<React.Fragment>
+										<span
+											style={{
+												color: 'gray',
+												fontSize: '14px',
+											}}
+										>
+											Date of creation:{' '}
+											{new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+										</span>
+									</React.Fragment>
+								}
+							/>
+							<Checkbox checked={selectedViews.includes(index)} onChange={() => handleCheckboxChange(index)} />
 						</ListItemButton>
 					</ListItem>
 				))}
 			</List>
 			<Divider />
-			<Button onClick={handleSaveView} style={{ margin: '8px' }}>
-				Save View
-			</Button>
-
+			<div className='Buttons'>
+				<Button onClick={handleSaveView} style={{ margin: '8px' }}>
+					Save View
+				</Button>
+				<Button
+					onClick={handleDeleteViews}
+					disabled={selectedViews.length === 0}
+					style={{ margin: '8px', color: selectedViews.length === 0 ? '' : 'red' }}
+				>
+					Delete
+				</Button>
+			</div>
 			<Dialog open={isDialogOpen} onClose={handleCloseDialog} onClick={(event) => event.stopPropagation()}>
 				<DialogTitle>Save New View</DialogTitle>
 				<DialogContent>
@@ -140,6 +192,11 @@ function Views({ viewMarkersLocations, setSavedViewsInfo }) {
 						fullWidth
 						value={newViewName}
 						onChange={handleNewViewNameChange}
+						onKeyPress={(e) => {
+							if (e.key === 'Enter' && newViewName.trim() !== '') {
+								handleSaveViewDialog();
+							}
+						}}
 					/>
 				</DialogContent>
 				<DialogActions>

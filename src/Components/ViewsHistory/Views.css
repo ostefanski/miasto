@@ -12,3 +12,16 @@
 	text-align: center;
 	margin: 8px;
 }
+
+.Buttons {
+	background-color: lightblue;
+	border: 1px solid #f5f5f5;
+	border-radius: 5px;
+	color: #000;
+	padding: 10px 20px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	cursor: pointer;
+}
