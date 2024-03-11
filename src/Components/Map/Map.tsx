@@ -57,7 +57,9 @@ type MapProps = {
 			endLocation?: google.maps.LatLng;
 		}>
 	>;
-	setViewMarkersLocations: React.Dispatch<React.SetStateAction<google.maps.LatLng[] | undefined>>;
+	setViewMarkersLocations: React.Dispatch<
+		React.SetStateAction<Array<{ marker?: google.maps.LatLng; originalIcon?: string }>>
+	>;
 };
 
 const Map: React.FC<MapProps> = ({
@@ -382,7 +384,10 @@ const Map: React.FC<MapProps> = ({
 
 		// Array to store saved markers, for caching map view with saved markers
 		const savedMarkers: MarkerWithPlace[] = [];
-		const savedMarkerLocations: google.maps.LatLng[] = [];
+		const savedMarkerLocations: {
+			marker?: google.maps.LatLng;
+			originalIcon?: string;
+		}[] = [];
 
 		nearbyMarkers.forEach((marker) => {
 			if (!isNaN(marker.duration) && marker.duration <= maxDuration) {
@@ -411,7 +416,10 @@ const Map: React.FC<MapProps> = ({
 						// The marker is not saved, so add it to the saved markers and change its icon
 						marker.marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
 						savedMarkers.push(marker);
-						savedMarkerLocations.push(marker.marker.getPosition() as google.maps.LatLng);
+						savedMarkerLocations.push({
+							marker: marker.marker.getPosition() as google.maps.LatLng,
+							originalIcon: marker.originalIcon,
+						});
 					}
 				});
 			}
@@ -809,6 +817,7 @@ const Map: React.FC<MapProps> = ({
 				setMenuGrabberCategoriesList({});
 				setInitCategoriesForMenulist([]);
 				setNavigationLocationInfo({});
+				setViewMarkersLocations([]);
 
 				const draggedLocation = markerInstance.current?.getPosition();
 
@@ -827,6 +836,7 @@ const Map: React.FC<MapProps> = ({
 					setMenuGrabberCategoriesList({});
 					setInitCategoriesForMenulist([]);
 					setNavigationLocationInfo({});
+					setViewMarkersLocations([]);
 				}
 			});
 
@@ -843,6 +853,7 @@ const Map: React.FC<MapProps> = ({
 				setMenuGrabberCategoriesList({});
 				setInitCategoriesForMenulist([]);
 				setNavigationLocationInfo({});
+				setViewMarkersLocations([]);
 			});
 		}
 	};
@@ -865,6 +876,7 @@ const Map: React.FC<MapProps> = ({
 					setMenuGrabberCategoriesList({});
 					setInitCategoriesForMenulist([]);
 					setNavigationLocationInfo({});
+					setViewMarkersLocations([]);
 				}
 			}
 		}
@@ -885,6 +897,7 @@ const Map: React.FC<MapProps> = ({
 				setMenuGrabberCategoriesList({});
 				setInitCategoriesForMenulist([]);
 				setNavigationLocationInfo({});
+				setViewMarkersLocations([]);
 			}
 		}
 	}, [chosenCity]);

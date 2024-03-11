@@ -1,10 +1,14 @@
-/* .main-view {
+.main-view {
 	display: flex;
 	width: 100%;
 	height: 100vh;
-} */
+}
 
-.map-view-container {
+h1 {
+	text-align: center;
+}
+
+/* .map-view-container {
 	display: flex;
 	position: relative;
 	flex-grow: 1;
@@ -13,4 +17,25 @@
 	justify-content: flex-start;
 	flex-flow: column nowrap;
 	align-items: center;
+} */
+
+.main-container-view {
+	display: flex;
+	position: relative; /* for displaying help center button in left corner */
+	justify-content: flex-start;
+	flex-flow: column nowrap;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+}
+
+.back-home {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.back-home > * {
+	margin-right: 8px;
+	font-size: large;
 }

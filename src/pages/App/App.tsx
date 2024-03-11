@@ -6,10 +6,16 @@ import { useState } from 'react';
 const App = () => {
 	interface SavedView {
 		name: string;
-		markers: { lat: number; lng: number }[];
+		markersWithIcons: { marker: { lat: number; lng: number }; originalIcon: string }[];
 	}
 
-	const [viewMarkersLocations, setViewMarkersLocations] = useState<google.maps.LatLng[]>();
+	const [viewMarkersLocations, setViewMarkersLocations] = useState<
+		Array<{
+			marker?: google.maps.LatLng;
+			originalIcon?: string;
+		}>
+	>([]);
+
 	const [savedViewsInfo, setSavedViewsInfo] = useState<SavedView[]>([]);
 
 	return (

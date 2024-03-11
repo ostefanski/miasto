@@ -27,7 +27,7 @@ const VIEWS_STORAGE_KEY = 'savedViews';
 
 interface SavedView {
 	name: string;
-	markers: { lat: number; lng: number }[];
+	markersWithIcons: { marker: { lat: number; lng: number }; originalIcon: string }[];
 }
 
 function Views({ viewMarkersLocations, setSavedViewsInfo }) {
@@ -88,18 +88,20 @@ function Views({ viewMarkersLocations, setSavedViewsInfo }) {
 		if (newViewName.trim() !== '') {
 			// Save the new view to local storage
 			// Create a copy of viewMarkersLocations at the time of saving
-			const currentMarkers = [...viewMarkersLocations];
-			const newView = {
+			const currentMarkers = viewMarkersLocations.map((location) => ({
+				marker: location.marker as google.maps.LatLng,
+				originalIcon: location.originalIcon || '',
+			}));
+
+			const newView: SavedView = {
 				name: newViewName,
-				markers: currentMarkers.map((latLng) => ({
-					lat: latLng.lat(),
-					lng: latLng.lng(),
-				})),
+				markersWithIcons: currentMarkers,
 			};
 
-			localStorage.setItem(VIEWS_STORAGE_KEY, JSON.stringify([...savedViews, newView]));
+			const updatedViews = [...savedViews, newView];
+			localStorage.setItem(VIEWS_STORAGE_KEY, JSON.stringify(updatedViews));
 
-			setSavedViews((prevViews) => [...prevViews, newView]);
+			setSavedViews(updatedViews);
 			handleCloseDialog();
 		}
 	};
