@@ -27,10 +27,14 @@ const VIEWS_STORAGE_KEY = 'savedViews';
 
 interface SavedView {
 	name: string;
-	markersWithIcons: { marker: { lat: number; lng: number }; originalIcon: string }[];
+	markersWithIcons: {
+		marker: { lat: number; lng: number };
+		originalIcon: string;
+		place: google.maps.places.PlaceResult;
+	}[];
 }
 
-function Views({ viewMarkersLocations, setSavedViewsInfo }) {
+function Views({ viewMarkersLocations, setSavedViewsInfo, setViewMarkersLocations, setShowPlaceInfo }) {
 	const [state, setState] = React.useState({
 		right: false,
 	});
@@ -57,6 +61,13 @@ function Views({ viewMarkersLocations, setSavedViewsInfo }) {
 		if (!isCheckboxClicked) {
 			console.log('Clicked View:', clickedView);
 			setSavedViewsInfo(clickedView); // keep a track of currently saved view markers locations
+			setShowPlaceInfo({
+				name: '',
+				formattedAddress: '',
+				duration: '',
+				distance: '',
+			});
+			setViewMarkersLocations([]);
 			navigate('/Views');
 		}
 	};
@@ -91,6 +102,7 @@ function Views({ viewMarkersLocations, setSavedViewsInfo }) {
 			const currentMarkers = viewMarkersLocations.map((location) => ({
 				marker: location.marker as google.maps.LatLng,
 				originalIcon: location.originalIcon || '',
+				place: location.place as google.maps.places.PlaceResult,
 			}));
 
 			const newView: SavedView = {

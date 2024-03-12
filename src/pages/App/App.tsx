@@ -6,17 +6,29 @@ import { useState } from 'react';
 const App = () => {
 	interface SavedView {
 		name: string;
-		markersWithIcons: { marker: { lat: number; lng: number }; originalIcon: string }[];
+		markersWithIcons: {
+			marker: { lat: number; lng: number };
+			originalIcon: string;
+			place: google.maps.places.PlaceResult;
+		}[];
 	}
 
 	const [viewMarkersLocations, setViewMarkersLocations] = useState<
 		Array<{
 			marker?: google.maps.LatLng;
 			originalIcon?: string;
+			place?: google.maps.places.PlaceResult;
 		}>
 	>([]);
 
 	const [savedViewsInfo, setSavedViewsInfo] = useState<SavedView[]>([]);
+	const [activeTransportButton, setActiveTransportButton] = useState('walk');
+	const [showPlaceInfo, setShowPlaceInfo] = useState({
+		name: '',
+		formattedAddress: '',
+		duration: '',
+		distance: '',
+	});
 
 	return (
 		<Router>
@@ -28,10 +40,25 @@ const App = () => {
 							viewMarkersLocations={viewMarkersLocations}
 							setViewMarkersLocations={setViewMarkersLocations}
 							setSavedViewsInfo={setSavedViewsInfo}
+							activeTransportButton={activeTransportButton}
+							setActiveTransportButton={setActiveTransportButton}
+							showPlaceInfo={showPlaceInfo}
+							setShowPlaceInfo={setShowPlaceInfo}
 						/>
 					}
 				/>
-				<Route path='/Views' element={<ViewsHistory savedViewsInfo={savedViewsInfo} />} />
+				<Route
+					path='/Views'
+					element={
+						<ViewsHistory
+							setActiveTransportButton={setActiveTransportButton}
+							activeTransportButton={activeTransportButton}
+							savedViewsInfo={savedViewsInfo}
+							showPlaceInfo={showPlaceInfo}
+							setShowPlaceInfo={setShowPlaceInfo}
+						/>
+					}
+				/>
 			</Routes>
 		</Router>
 	);

@@ -58,7 +58,9 @@ type MapProps = {
 		}>
 	>;
 	setViewMarkersLocations: React.Dispatch<
-		React.SetStateAction<Array<{ marker?: google.maps.LatLng; originalIcon?: string }>>
+		React.SetStateAction<
+			Array<{ marker?: google.maps.LatLng; originalIcon?: string; place?: google.maps.places.PlaceResult }>
+		>
 	>;
 };
 
@@ -387,6 +389,7 @@ const Map: React.FC<MapProps> = ({
 		const savedMarkerLocations: {
 			marker?: google.maps.LatLng;
 			originalIcon?: string;
+			place?: google.maps.places.PlaceResult;
 		}[] = [];
 
 		nearbyMarkers.forEach((marker) => {
@@ -419,6 +422,7 @@ const Map: React.FC<MapProps> = ({
 						savedMarkerLocations.push({
 							marker: marker.marker.getPosition() as google.maps.LatLng,
 							originalIcon: marker.originalIcon,
+							place: marker.place,
 						});
 					}
 				});

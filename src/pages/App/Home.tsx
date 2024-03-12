@@ -17,20 +17,21 @@ import Views from 'src/Components/ViewsHistory/Views';
 
 const cookies = new Cookies();
 
-function Home({ viewMarkersLocations, setViewMarkersLocations, setSavedViewsInfo }) {
+function Home({
+	viewMarkersLocations,
+	setViewMarkersLocations,
+	setSavedViewsInfo,
+	activeTransportButton,
+	setActiveTransportButton,
+	showPlaceInfo,
+	setShowPlaceInfo,
+}) {
 	const [chosenCity, setChosenCity] = useState('');
 	const [selectedLocation, setSelectedLocation] = useState<google.maps.LatLng | undefined>(undefined);
 	const [userPosition, setUserPosition] = useState<google.maps.LatLngLiteral>();
 	const [count, setCount] = useState(0);
 	const [categoriesTypes, setCategoriesTypes] = useState([]);
 	const [initCategoriesForMenuList, setInitCategoriesForMenulist] = useState([]);
-	const [showPlaceInfo, setShowPlaceInfo] = useState({
-		name: '',
-		formattedAddress: '',
-		duration: '',
-		distance: '',
-	});
-	const [activeTransportButton, setActiveTransportButton] = useState('walk');
 	const [activeAreaButton, setActiveAreaButton] = useState('15');
 	const [menuGrabberCategoriesList, setMenuGrabberCategoriesList] = useState({});
 	const [directionsMenu, setDirectionsMenu] = useState<
@@ -194,7 +195,12 @@ function Home({ viewMarkersLocations, setViewMarkersLocations, setSavedViewsInfo
 							/>
 						</div>
 						<div className='Views'>
-							<Views viewMarkersLocations={viewMarkersLocations} setSavedViewsInfo={setSavedViewsInfo} />
+							<Views
+								viewMarkersLocations={viewMarkersLocations}
+								setSavedViewsInfo={setSavedViewsInfo}
+								setViewMarkersLocations={setViewMarkersLocations}
+								setShowPlaceInfo={setShowPlaceInfo}
+							/>
 						</div>
 					</div>
 					<div className='map-container'>
