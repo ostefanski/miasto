@@ -81,6 +81,7 @@ function MapView({
 				isMarkerBeingDragged = false;
 				clearDirections();
 				clearPlaceDetails();
+				clearOriginAndDestination();
 
 				const draggedLocation = markerInstance.current?.getPosition();
 
@@ -94,6 +95,7 @@ function MapView({
 				if (!isMarkerBeingDragged) {
 					clearDirections();
 					clearPlaceDetails();
+					clearOriginAndDestination();
 					markerInstance.current?.setVisible(false);
 				}
 			});
@@ -106,6 +108,7 @@ function MapView({
 				mapInstance.current?.setZoom(12);
 				clearDirections();
 				clearPlaceDetails();
+				clearOriginAndDestination();
 			});
 		}
 	};
@@ -215,6 +218,11 @@ function MapView({
 			duration: '',
 			distance: '',
 		}));
+	};
+
+	const clearOriginAndDestination = () => {
+		setCurrentOrigin(null);
+		setCurrentDestination(null);
 	};
 
 	useEffect(() => {
